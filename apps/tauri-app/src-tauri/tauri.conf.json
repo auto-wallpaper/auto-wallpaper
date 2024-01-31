@@ -1,0 +1,125 @@
+{
+  "build": {
+    "beforeBuildCommand": "pnpm next:build",
+    "beforeDevCommand": "pnpm next:dev",
+    "devPath": "http://localhost:4000",
+    "distDir": "../out"
+  },
+  "package": {
+    "productName": "AI Wallpaper",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "macOSPrivateApi": true,
+    "allowlist": {
+      "all": false,
+      "fs": {
+        "writeFile": true,
+        "createDir": true,
+        "exists": true,
+        "readFile": true,
+        "scope": [
+          "$APPDATA",
+          "$APPDATA/*",
+          "$APPDATA/**",
+          "$APPDATA/**/*"
+        ]
+      },
+      "path": {
+        "all": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": [
+          "https://www.iloveimg.com/*",
+          "https://*.iloveimg.com/*",
+          "https://api.internal.temp-mail.io/*",
+          "https://app.leonardo.ai/*",
+          "https://api.leonardo.ai/*",
+          "https://cdn.leonardo.ai/*",
+          "https://copilot.microsoft.com/*",
+          "https://geocoding-api.open-meteo.com/v1/search",
+          "https://api.open-meteo.com/v1/forecast"
+        ]
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      },
+      "notification": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.ai-wallpaper.app",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0NTc4MDYyNjg1QTAzODkKUldTSkExcG9Zb0JYdEQvQnAzRDdIN1RKc29wd0VYM1RnOVc5SURKaWNWbXRYcDJid2J5Qmc3RjMK"
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "AI Wallpaper",
+        "label": "main",
+        "decorations": false,
+        "minHeight": 700,
+        "minWidth": 680,
+        "height": 730,
+        "width": 950,
+        "transparent": true,
+        "center": true
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    }
+  }
+}

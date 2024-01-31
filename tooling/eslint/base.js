@@ -16,6 +16,7 @@ const config = {
   plugins: ["@typescript-eslint", "import"],
   rules: {
     "turbo/no-undeclared-env-vars": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
@@ -26,7 +27,7 @@ const config = {
     ],
     "@typescript-eslint/no-misused-promises": [
       2,
-      { checksVoidReturn: { attributes: false } },
+      { checksVoidReturn: false },
     ],
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
   },

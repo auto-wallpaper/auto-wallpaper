@@ -114,7 +114,7 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive", className)}
+      className={cn(error && "text-red-600", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -147,15 +147,15 @@ FormControl.displayName = "FormControl";
 
 const FormDescription = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { formDescriptionId } = useFormField();
 
   return (
-    <p
+    <div
       ref={ref}
       id={formDescriptionId}
-      className={cn("text-[0.8rem] text-muted-foreground", className)}
+      className={cn("text-zinc-400 text-[0.8rem]", className)}
       {...props}
     />
   );
@@ -177,7 +177,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-[0.8rem] font-medium text-destructive", className)}
+      className={cn("text-red-600 text-[0.8rem] font-medium", className)}
       {...props}
     >
       {body}
@@ -196,6 +196,7 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  ControllerProps
 };
 
 export { useFieldArray } from "react-hook-form";

@@ -7,6 +7,7 @@
       "enabled": false
     }
   ],
+  "addLabels": ["dependencies"],
   "updateInternalDeps": true,
   "rangeStrategy": "bump",
   "automerge": true

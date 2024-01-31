@@ -97,8 +97,8 @@ export function PostList(props: {
         <PostCardSkeleton pulse={false} />
         <PostCardSkeleton pulse={false} />
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10">
-          <p className="text-2xl font-bold text-white">No posts yet</p>
+        <div className="bg-black/10 absolute inset-0 flex flex-col items-center justify-center">
+          <p className="text-white text-2xl font-bold">No posts yet</p>
         </div>
       </div>
     );
@@ -131,15 +131,15 @@ export function PostCard(props: {
   });
 
   return (
-    <div className="flex flex-row rounded-lg bg-muted p-4">
+    <div className="bg-muted flex flex-row rounded-lg p-4">
       <div className="flex-grow">
-        <h2 className="text-2xl font-bold text-primary">{props.post.title}</h2>
+        <h2 className="text-primary text-2xl font-bold">{props.post.title}</h2>
         <p className="mt-2 text-sm">{props.post.content}</p>
       </div>
       <div>
         <Button
           variant="ghost"
-          className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
+          className="text-primary hover:bg-transparent hover:text-white cursor-pointer text-sm font-bold uppercase"
           onClick={() => deletePost.mutate(props.post.id)}
         >
           Delete
@@ -152,11 +152,11 @@ export function PostCard(props: {
 export function PostCardSkeleton(props: { pulse?: boolean }) {
   const { pulse = true } = props;
   return (
-    <div className="flex flex-row rounded-lg bg-muted p-4">
+    <div className="bg-muted flex flex-row rounded-lg p-4">
       <div className="flex-grow">
         <h2
           className={cn(
-            "w-1/4 rounded bg-primary text-2xl font-bold",
+            "bg-primary w-1/4 rounded text-2xl font-bold",
             pulse && "animate-pulse",
           )}
         >
@@ -164,7 +164,7 @@ export function PostCardSkeleton(props: { pulse?: boolean }) {
         </h2>
         <p
           className={cn(
-            "mt-2 w-1/3 rounded bg-current text-sm",
+            "bg-current mt-2 w-1/3 rounded text-sm",
             pulse && "animate-pulse",
           )}
         >

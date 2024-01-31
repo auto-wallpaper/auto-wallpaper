@@ -12,7 +12,7 @@ function PostCard(props: {
   onDelete: () => void;
 }) {
   return (
-    <View className="flex flex-row rounded-lg bg-muted p-4">
+    <View className="bg-muted flex flex-row rounded-lg p-4">
       <View className="flex-grow">
         <Link
           asChild
@@ -22,15 +22,15 @@ function PostCard(props: {
           }}
         >
           <Pressable className="">
-            <Text className=" text-xl font-semibold text-primary">
+            <Text className=" text-primary text-xl font-semibold">
               {props.post.title}
             </Text>
-            <Text className="mt-2 text-foreground">{props.post.content}</Text>
+            <Text className="text-foreground mt-2">{props.post.content}</Text>
           </Pressable>
         </Link>
       </View>
       <Pressable onPress={props.onDelete}>
-        <Text className="font-bold uppercase text-primary">Delete</Text>
+        <Text className="text-primary font-bold uppercase">Delete</Text>
       </Pressable>
     </View>
   );
@@ -53,29 +53,29 @@ function CreatePost() {
   return (
     <View className="mt-4 flex gap-2">
       <TextInput
-        className=" items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
+        className=" border-input bg-background text-foreground items-center rounded-md border px-3 text-lg leading-[1.25]"
         value={title}
         onChangeText={setTitle}
         placeholder="Title"
       />
       {error?.data?.zodError?.fieldErrors.title && (
-        <Text className="mb-2 text-destructive">
+        <Text className="text-destructive mb-2">
           {error.data.zodError.fieldErrors.title}
         </Text>
       )}
       <TextInput
-        className="items-center rounded-md border border-input bg-background px-3  text-lg leading-[1.25] text-foreground"
+        className="border-input bg-background text-foreground items-center rounded-md border  px-3 text-lg leading-[1.25]"
         value={content}
         onChangeText={setContent}
         placeholder="Content"
       />
       {error?.data?.zodError?.fieldErrors.content && (
-        <Text className="mb-2 text-destructive">
+        <Text className="text-destructive mb-2">
           {error.data.zodError.fieldErrors.content}
         </Text>
       )}
       <Pressable
-        className="flex items-center rounded bg-primary p-2"
+        className="bg-primary flex items-center rounded p-2"
         onPress={() => {
           mutate({
             title,
@@ -86,7 +86,7 @@ function CreatePost() {
         <Text className="text-foreground">Create</Text>
       </Pressable>
       {error?.data?.code === "UNAUTHORIZED" && (
-        <Text className="mt-2 text-destructive">
+        <Text className="text-destructive mt-2">
           You need to be logged in to create a post
         </Text>
       )}
@@ -107,20 +107,20 @@ export default function Index() {
     <SafeAreaView className=" bg-background">
       {/* Changes page title visible on the header */}
       <Stack.Screen options={{ title: "Home Page" }} />
-      <View className="h-full w-full bg-background p-4">
-        <Text className="pb-2 text-center text-5xl font-bold text-foreground">
+      <View className="bg-background h-full w-full p-4">
+        <Text className="text-foreground pb-2 text-center text-5xl font-bold">
           Create <Text className="text-primary">T3</Text> Turbo
         </Text>
 
         <Pressable
           onPress={() => void utils.post.all.invalidate()}
-          className="flex items-center rounded-lg bg-primary p-2"
+          className="bg-primary flex items-center rounded-lg p-2"
         >
           <Text className="text-foreground"> Refresh posts</Text>
         </Pressable>
 
         <View className="py-2">
-          <Text className="font-semibold italic text-primary">
+          <Text className="text-primary font-semibold italic">
             Press on a post
           </Text>
         </View>

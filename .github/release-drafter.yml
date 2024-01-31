@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/release-drafter/release-drafter/master/schema.json
+
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+no-changes-template: "* No changes"
+template: |
+  # What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+categories:
+  - title: "💥 Breaking"
+    labels:
+      - "breaking"
+  - title: "✨ New Feature"
+    labels:
+      - "feature"
+  - title: "🐛 Bug Fix"
+    labels:
+      - "bug"
+  - title: "⚙️ Maintenance"
+    labels:
+      - "maintenance"
+  - title: "📖 Documentation"
+    labels:
+      - "docs"
+  - title: "🔒️ Security"
+    labels:
+      - "security"
+  - title: "Other changes"
+  - title: "⬆️ Dependency Updates"
+    labels:
+      - "dependencies"
+    collapse-after: 5
+
+exclude-labels:
+  - "skip-changelog"
+
+sort-direction: descending
+sort-by: merged_at

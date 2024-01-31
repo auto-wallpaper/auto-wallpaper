@@ -1,0 +1,20 @@
+name: Release Drafter
+run-name: "[Release Draft] ${{ github.event.head_commit.message }}"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commitish: main
