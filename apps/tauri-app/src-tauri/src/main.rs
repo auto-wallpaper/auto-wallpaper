@@ -70,7 +70,7 @@ fn build_main_window(app: &tauri::AppHandle) {
     )
     .fullscreen(false)
     .resizable(true)
-    .title("AI Wallpaper")
+    .title("Auto Wallpaper")
     .decorations(false)
     .min_inner_size(680.0, 700.0)
     .inner_size(950.0, 730.0)

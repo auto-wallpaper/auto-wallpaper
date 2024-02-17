@@ -7,7 +7,7 @@
     "distDir": "../out"
   },
   "package": {
-    "productName": "AI Wallpaper",
+    "productName": "Auto Wallpaper",
     "version": "0.1.0"
   },
   "tauri": {
@@ -74,7 +74,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.ai-wallpaper.app",
+      "identifier": "com.auto-wallpaper.app",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -105,7 +105,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "AI Wallpaper",
+        "title": "Auto Wallpaper",
         "label": "main",
         "decorations": false,
         "minHeight": 700,
