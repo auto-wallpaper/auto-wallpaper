@@ -90,7 +90,7 @@ export const UserStore = makeStore(".user.dat", {
   }),
   autostart: makeField({
     schema: z.boolean(),
-    defaultValue: true,
+    defaultValue: false,
     async onChange(shouldEnable) {
       const enabled = await isEnabled().catch(() => false)
 

@@ -2,13 +2,13 @@ import type { z } from "zod";
 import { Store } from "tauri-plugin-store-api";
 import { useEffect, useState } from "react";
 
+type Value<TValue, TDefaultValue> = TDefaultValue extends NonNullable<unknown> ? TValue : TValue | null
+
 type FieldOptions<TSchema extends z.Schema<unknown>, TDefaultValue extends z.input<TSchema>> = {
   schema: TSchema;
   defaultValue?: TDefaultValue;
-  onChange?: (value: z.output<TSchema>) => void
+  onChange?: (value: Value<z.output<TSchema>, TDefaultValue>) => void
 };
-
-type Value<TValue, TDefaultValue> = TDefaultValue extends NonNullable<unknown> ? TValue : TValue | null
 
 type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
   $inferInput: z.input<TSchema>;
@@ -26,7 +26,8 @@ export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue exten
 ) => {
   return ({ key, store }: { key: string, store: Store }): Field<TSchema, TDefaultValue> => {
     const initialization = (async () => {
-      await store.onKeyChange(key, onChange as never)
+      if (onChange)
+        await store.onKeyChange<z.output<TSchema>>(key, onChange)
 
       if (!await store.has(key) && typeof defaultValue !== "undefined") {
         const parsedValue = schema ? await schema.parseAsync(defaultValue) : defaultValue;
