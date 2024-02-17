@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Auto Wallpaper",
-    "version": "./../../../../package.json"
+    "version": "./../../../package.json"
   },
   "tauri": {
     "macOSPrivateApi": true,
