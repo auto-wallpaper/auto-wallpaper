@@ -99,7 +99,7 @@
       "active": true,
       "dialog": true,
       "endpoints": [
-        "https://github.com/auto-wallpaper/auto-wallpaper/releases/download/main/latest.json"
+        "https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0NTc4MDYyNjg1QTAzODkKUldTSkExcG9Zb0JYdEQvQnAzRDdIN1RKc29wd0VYM1RnOVc5SURKaWNWbXRYcDJid2J5Qmc3RjMK"
     },
