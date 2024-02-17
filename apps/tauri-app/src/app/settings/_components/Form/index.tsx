@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import type { UpdateResult } from "@tauri-apps/api/updater";
+import React, { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
+import { emit } from "@tauri-apps/api/event";
+import { checkUpdate } from "@tauri-apps/api/updater";
 import { z } from "zod";
 
+import { Button } from "@acme/ui/button";
 import {
   Form,
   FormControl,
@@ -87,6 +92,18 @@ const SettingsForm: React.FC = () => {
     [watchedFormFields.interval],
   );
 
+  const [version, setVersion] = useState("");
+  const [update, setUpdate] = useState<UpdateResult | null>(null);
+
+  useEffect(() => {
+    const handler = async () => {
+      setVersion(await getVersion());
+      setUpdate(await checkUpdate());
+    };
+
+    void handler();
+  }, []);
+
   return (
     <Form {...form}>
       <form
@@ -162,6 +179,40 @@ const SettingsForm: React.FC = () => {
                   <SelectItem value="disable">Disable</SelectItem>
                 </SelectContent>
               </Select>
+            }
+          />
+
+          <Field
+            label={`Version (${
+              update?.shouldUpdate
+                ? "An update is available"
+                : "You're up to date"
+            })`}
+            control={
+              <div className="mt-1">
+                <p className="m-0 text-sm font-normal">
+                  current version: <span>v{version}</span>
+                </p>
+
+                {update?.shouldUpdate ? (
+                  <Button
+                    className="mt-1"
+                    onClick={() => void emit("tauri://update")}
+                  >
+                    Update
+                    {update.manifest?.version
+                      ? ` to v${update.manifest?.version}`
+                      : ""}
+                  </Button>
+                ) : (
+                  <Button
+                    className="mt-1"
+                    onClick={async () => setUpdate(await checkUpdate())}
+                  >
+                    check for updates
+                  </Button>
+                )}
+              </div>
             }
           />
         </div>
