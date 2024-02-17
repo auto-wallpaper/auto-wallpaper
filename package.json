@@ -1,6 +1,7 @@
 {
   "name": "create-t3-turbo",
   "private": true,
+  "version": "0.1.0",
   "engines": {
     "node": ">=20.10.0"
   },
@@ -21,7 +22,8 @@
     "husky:install": "husky install",
     "prepare": "pnpm husky:install",
     "postinstall": "pnpm lint:ws",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "postversion": "git push upstream && git push upstream --tags"
   },
   "devDependencies": {
     "@acme/prettier-config": "workspace:^0.1.0",
