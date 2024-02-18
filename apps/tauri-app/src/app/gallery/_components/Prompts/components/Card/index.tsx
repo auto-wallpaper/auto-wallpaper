@@ -14,10 +14,8 @@ export type CardProps = Omit<PromptCardData, "image">;
 const Card: React.FC<CardProps> = ({ id, prompt }) => {
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
-  
-  // `https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/${id}.jpeg`
-  const imageSrc =
-    "https://cdn.leonardo.ai/users/74d8382e-fd85-402f-bf2c-8ca0bafa1b96/generations/7c9d84f0-035c-4e52-8cbf-964718dc9520/PhotoReal_rainy_and_cloudy_days_in_old_towns_of_Iran_0.jpg";
+
+  const imageSrc = `https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/${id}.jpeg`;
 
   return (
     <PromptCard
