@@ -37,15 +37,13 @@
         "all": true,
         "request": true,
         "scope": [
-          "https://www.iloveimg.com/*",
           "https://*.iloveimg.com/*",
           "https://api.internal.temp-mail.io/*",
-          "https://app.leonardo.ai/*",
-          "https://api.leonardo.ai/*",
-          "https://cdn.leonardo.ai/*",
+          "https://*.leonardo.ai/*",
           "https://copilot.microsoft.com/*",
           "https://geocoding-api.open-meteo.com/v1/search",
-          "https://api.open-meteo.com/v1/forecast"
+          "https://api.open-meteo.com/v1/forecast",
+          "https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/*"
         ]
       },
       "window": {

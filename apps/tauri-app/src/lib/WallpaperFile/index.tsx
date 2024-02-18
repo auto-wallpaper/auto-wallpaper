@@ -31,12 +31,12 @@ export const setWallpaperSource = async (promptId: string) => {
 
 export const useWallpaperSource = (promptId: string) => {
   const source = useWallpapersSourceStore(
-    (state) => state.wallpapers[promptId],
+    (state) => state.wallpapers[promptId] ?? null,
   );
   const setSource = useWallpapersSourceStore(
     (state) => state.setWallpaperSource,
   );
-  const [status, setStatus] = useState<"loading" | "error" | "finish">(
+  const [status, setStatus] = useState<"loading" | "error" | "finished">(
     "loading",
   );
 
@@ -47,13 +47,13 @@ export const useWallpaperSource = (promptId: string) => {
         const imageData = await getWallpaperOf(promptId);
 
         if (!imageData) {
-          setStatus("finish");
+          setStatus("finished");
           return;
         }
 
         const base64 = await toBase64(imageData);
         setSource(promptId, base64);
-        setStatus("finish");
+        setStatus("finished");
       } catch (e) {
         setStatus("error");
         throw e;

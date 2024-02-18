@@ -12,11 +12,9 @@ import Spinner from "~/app/_components/Spinner";
 import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator/hooks";
 import { UserStore } from "~/stores/user";
 import { getWallpaperOf } from "~/utils/wallpapers";
-import { usePromptContext } from "../../contexts";
-import Box from "../Box";
-import Button from "../Button";
 import DeleteAction from "./components/DeleteAction";
 import EditAction from "./components/EditAction";
+import { ActionButton, usePromptContext } from "~/app/_components/PromptCard";
 
 const SpinningStopIcon: IconType = (props) => {
   return (
@@ -35,15 +33,15 @@ const Actions: React.FC = () => {
   const isAnotherGenerating = usingPrompt?.id !== id && status !== "IDLE";
 
   return (
-    <Box>
+    <>
       {isThisGenerating && (
-        <Button
+        <ActionButton
           Icon={status === "CANCELING" ? Spinner : SpinningStopIcon}
           onClick={() => cancel()}
         />
       )}
       {!isThisGenerating && (
-        <Button
+        <ActionButton
           Icon={LuRefreshCcw}
           onClick={() => generate(id)}
           disabled={isAnotherGenerating}
@@ -54,7 +52,7 @@ const Actions: React.FC = () => {
           }
         />
       )}
-      <Button
+      <ActionButton
         Icon={LuDownload}
         onClick={async () => {
           const filePath = await save({
@@ -79,7 +77,7 @@ const Actions: React.FC = () => {
       />
       <EditAction />
       {prompts.length > 1 && <DeleteAction />}
-    </Box>
+    </>
   );
 };
 

@@ -33,8 +33,9 @@ const Item: React.FC<ItemProps> = ({ href, label }) => {
 const Navbar: React.FC = () => {
   return (
     <div className="w-full border-b border-zinc-800 bg-transparent">
-      <div className="grid w-max grid-cols-2 bg-transparent text-white">
+      <div className="flex w-max bg-transparent text-white">
         <Item href="/" label="Prompts" />
+        <Item href="/gallery" label="Gallery" />
         <Item href="/settings" label="Settings" />
       </div>
     </div>

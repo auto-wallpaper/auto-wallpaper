@@ -4,10 +4,11 @@ import React, { useMemo } from "react";
 
 import { UserStore } from "~/stores/user";
 import { sortByDate } from "~/utils/sort";
+import { PromptsGrid } from "../PromptCard";
 import NewPrompt from "./components/NewPrompt";
-import PromptCard from "./components/PromptCard";
+import UserPromptCard from "./components/PromptCard";
 
-const PromptsGrid: React.FC = () => {
+const UserPrompts: React.FC = () => {
   const prompts = UserStore.prompts.useValue();
 
   const sortedPrompts = useMemo(
@@ -16,14 +17,14 @@ const PromptsGrid: React.FC = () => {
   );
 
   return (
-    <div className="grid h-max grid-cols-2 gap-2 lg:grid-cols-3 lg:gap-5">
+    <PromptsGrid>
       {sortedPrompts.map((data) => (
-        <PromptCard key={data.id} data={data} />
+        <UserPromptCard key={data.id} data={data} />
       ))}
 
       <NewPrompt />
-    </div>
+    </PromptsGrid>
   );
 };
 
-export default PromptsGrid;
+export default UserPrompts;
