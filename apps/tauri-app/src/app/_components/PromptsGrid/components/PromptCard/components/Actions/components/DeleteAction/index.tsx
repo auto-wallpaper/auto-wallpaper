@@ -12,8 +12,8 @@ import {
 import { UserStore } from "~/stores/user";
 import { sortByDate } from "~/utils/sort";
 import { removeWallpaperFiles } from "~/utils/wallpapers";
-import { usePromptContext } from "../../../../contexts";
 import Action from "../Action";
+import { usePromptContext } from "~/app/_components/PromptCard";
 
 const DeleteAction: React.FC = () => {
   const { id } = usePromptContext();

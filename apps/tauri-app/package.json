@@ -29,6 +29,7 @@
     "@trpc/server": "11.0.0-next-beta.236",
     "axios": "^1.6.7",
     "axios-cookiejar-support": "^5.0.0",
+    "compare-versions": "^6.1.0",
     "eventemitter3": "^5.0.1",
     "fetch-cookie": "^2.1.0",
     "geist": "^1.2.1",

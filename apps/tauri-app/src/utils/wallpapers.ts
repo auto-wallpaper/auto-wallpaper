@@ -1,3 +1,4 @@
+import type { BinaryFileContents } from "@tauri-apps/api/fs";
 import { BaseDirectory, exists, readBinaryFile, removeDir, createDir, writeBinaryFile } from "@tauri-apps/api/fs"
 import { join } from "@tauri-apps/api/path"
 
@@ -23,7 +24,7 @@ export const removeWallpaperFiles = async (promptId: string) => {
     await removeDir(promptId, { dir: BaseDirectory.AppData, recursive: true })
 }
 
-export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId }: { upscaleImage: Uint8Array, originalImage: Uint8Array, promptId: string }) => {
+export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId }: { upscaleImage: BinaryFileContents, originalImage: BinaryFileContents, promptId: string }) => {
     if (!await exists(promptId, { dir: BaseDirectory.AppData })) {
         await createDir(promptId, {
             dir: BaseDirectory.AppData

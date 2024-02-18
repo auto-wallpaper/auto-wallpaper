@@ -4,7 +4,7 @@ import React from "react";
 import { cn } from "@acme/ui";
 import { Dialog, DialogContent, DialogTrigger } from "@acme/ui/dialog";
 
-import Button from "../../../Button";
+import { ActionButton } from "~/app/_components/PromptCard";
 
 type ActionProps = React.PropsWithChildren<{
   Icon: IconType;
@@ -26,7 +26,7 @@ const Action: React.FC<ActionProps> = ({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogTrigger asChild>
-        <Button className={className?.trigger} Icon={Icon} />
+        <ActionButton className={className?.trigger} Icon={Icon} />
       </DialogTrigger>
       <DialogContent
         className={cn("max-w-[35rem]", className?.content)}

@@ -29,8 +29,8 @@ import { Textarea } from "@acme/ui/textarea";
 
 import { promptEngine } from "~/lib/PromptEngine";
 import { UserStore } from "~/stores/user";
-import { usePromptContext } from "../../../../contexts";
 import Action from "../Action";
+import { usePromptContext } from "~/app/_components/PromptCard";
 
 const EditAction: React.FC = () => {
   const { id, prompt } = usePromptContext();

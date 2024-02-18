@@ -14,7 +14,7 @@ type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
   $inferInput: z.input<TSchema>;
   $inferOutput: z.output<TSchema>;
   schema: TSchema;
-  set: (value: z.input<TSchema> | ((prev: Value<z.output<TSchema>, TDefaultValue>) => z.input<TSchema>)) => Promise<void>;
+  set: (value: z.input<TSchema> | ((prev: Value<z.output<TSchema>, TDefaultValue>) => z.input<TSchema>)) => Promise<z.output<TSchema>>;
   get: () => Promise<Value<z.output<TSchema>, TDefaultValue>>;
   validate: (value: z.input<TSchema>) => Promise<z.output<TSchema>>;
   onChange: (cb: (value: Value<z.output<TSchema>, TDefaultValue>) => void) => Promise<() => void>;
@@ -48,6 +48,8 @@ export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue exten
         const parsedValue = schema ? await schema.parseAsync(value) : value;
         await store.set(key, parsedValue);
         await store.save();
+
+        return parsedValue
       },
       get: async () => {
         await initialization
