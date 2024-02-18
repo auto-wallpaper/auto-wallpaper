@@ -9,11 +9,11 @@ import {
   DialogTitle,
 } from "@acme/ui/dialog";
 
+import { usePromptContext } from "~/app/_components/PromptCard";
 import { UserStore } from "~/stores/user";
 import { sortByDate } from "~/utils/sort";
 import { removeWallpaperFiles } from "~/utils/wallpapers";
 import Action from "../Action";
-import { usePromptContext } from "~/app/_components/PromptCard";
 
 const DeleteAction: React.FC = () => {
   const { id } = usePromptContext();
@@ -33,20 +33,24 @@ const DeleteAction: React.FC = () => {
       <DialogFooter>
         <Button
           variant="destructive"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            
+
+            const selectedPromptId = await UserStore.selectedPrompt.get();
+
             void UserStore.prompts.set((prev) => {
-              const sorted = [...prev].sort((a, b) =>
-                sortByDate(a.createdAt, b.createdAt),
-              );
-              const index = sorted.findIndex((prompt) => prompt.id !== id);
-              const newSelectedPrompt = sorted[index + 1] ?? sorted[0];
+              if (selectedPromptId === id) {
+                const sorted = [...prev].sort((a, b) =>
+                  sortByDate(a.createdAt, b.createdAt),
+                );
+                const index = sorted.findIndex((prompt) => prompt.id === id);
+                const newSelectedPrompt = sorted[index + 1] ?? sorted[0];
 
-              if (newSelectedPrompt) {
-                void UserStore.selectedPrompt.set(newSelectedPrompt?.id);
+                if (newSelectedPrompt) {
+                  void UserStore.selectedPrompt.set(newSelectedPrompt?.id);
+                }
               }
-
+              
               return prev.filter((prompt) => prompt.id !== id);
             });
 
