@@ -1,5 +1,4 @@
 import { fetch } from "@tauri-apps/api/http";
-import { info } from "tauri-plugin-log-api";
 import { UserStore } from "~/stores/user";
 import { log } from "~/utils/log";
 
@@ -118,8 +117,6 @@ promptEngine.addVariable("DAY_TIME", async () => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-US', { timeZone: location.timezone, hour: "numeric", hourCycle: "h24" });
     const h = +(formatter.formatToParts(now).find(part => part.type === 'hour')?.value ?? now.getHours());
-
-    void info(`h: ${h}`)
 
     const [dayTime] = Object.entries(map).find(([_, [start, end]]) => {
         if (h >= start && h < end) {

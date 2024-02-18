@@ -14,11 +14,15 @@
     "macOSPrivateApi": true,
     "allowlist": {
       "all": false,
+      "dialog": {
+        "save": true
+      },
       "fs": {
         "writeFile": true,
         "createDir": true,
         "exists": true,
         "readFile": true,
+        "removeDir": true,
         "scope": [
           "$APPDATA",
           "$APPDATA/*",

@@ -1,13 +1,17 @@
 import type { IconType } from "react-icons/lib";
 import React from "react";
+import { save } from "@tauri-apps/api/dialog";
+import { writeBinaryFile } from "@tauri-apps/api/fs";
+import { downloadDir, join } from "@tauri-apps/api/path";
 import { IoStopOutline } from "react-icons/io5";
-import { LuRefreshCcw } from "react-icons/lu";
+import { LuDownload, LuRefreshCcw } from "react-icons/lu";
 
 import { cn } from "@acme/ui";
 
 import Spinner from "~/app/_components/Spinner";
 import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator/hooks";
 import { UserStore } from "~/stores/user";
+import { getWallpaperOf } from "~/utils/wallpapers";
 import { usePromptContext } from "../../contexts";
 import Box from "../Box";
 import Button from "../Button";
@@ -50,6 +54,29 @@ const Actions: React.FC = () => {
           }
         />
       )}
+      <Button
+        Icon={LuDownload}
+        onClick={async () => {
+          const filePath = await save({
+            filters: [
+              {
+                name: "Image",
+                extensions: ["jpeg", "jpg"],
+              },
+            ],
+            title: "Save the wallpaper",
+            defaultPath: await join(await downloadDir(), id),
+          });
+
+          if (!filePath) return;
+
+          const data = await getWallpaperOf(id);
+
+          if (!data) return;
+
+          await writeBinaryFile(filePath, data);
+        }}
+      />
       <EditAction />
       {prompts.length > 1 && <DeleteAction />}
     </Box>
