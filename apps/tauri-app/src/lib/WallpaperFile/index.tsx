@@ -9,7 +9,7 @@ type WallpapersSourceState = {
   setWallpaperSource: (promptId: string, source: string) => void;
 };
 
-const useWallpapersSourceStore = create<WallpapersSourceState>((set) => ({
+export const useWallpapersSourceStore = create<WallpapersSourceState>((set) => ({
   wallpapers: {},
   setWallpaperSource(promptId: string, source: string) {
     set((prev) => ({
