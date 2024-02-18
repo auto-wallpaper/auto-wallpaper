@@ -8,13 +8,14 @@ import { LuDownload, LuRefreshCcw } from "react-icons/lu";
 
 import { cn } from "@acme/ui";
 
+import { ActionButton, usePromptContext } from "~/app/_components/PromptCard";
 import Spinner from "~/app/_components/Spinner";
+import { useWallpapersSourceStore } from "~/lib/WallpaperFile";
 import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator/hooks";
 import { UserStore } from "~/stores/user";
 import { getWallpaperOf } from "~/utils/wallpapers";
 import DeleteAction from "./components/DeleteAction";
 import EditAction from "./components/EditAction";
-import { ActionButton, usePromptContext } from "~/app/_components/PromptCard";
 
 const SpinningStopIcon: IconType = (props) => {
   return (
@@ -29,6 +30,9 @@ const Actions: React.FC = () => {
   const prompts = UserStore.prompts.useValue();
   const { id } = usePromptContext();
   const { cancel, generate, status, usingPrompt } = useWallpaperEngineStore();
+  const source = useWallpapersSourceStore(
+    (state) => state.wallpapers[id] ?? null,
+  );
   const isThisGenerating = usingPrompt?.id === id && status !== "IDLE";
   const isAnotherGenerating = usingPrompt?.id !== id && status !== "IDLE";
 
@@ -52,29 +56,31 @@ const Actions: React.FC = () => {
           }
         />
       )}
-      <ActionButton
-        Icon={LuDownload}
-        onClick={async () => {
-          const filePath = await save({
-            filters: [
-              {
-                name: "Image",
-                extensions: ["jpeg", "jpg"],
-              },
-            ],
-            title: "Save the wallpaper",
-            defaultPath: await join(await downloadDir(), id),
-          });
+      {source && (
+        <ActionButton
+          Icon={LuDownload}
+          onClick={async () => {
+            const filePath = await save({
+              filters: [
+                {
+                  name: "Image",
+                  extensions: ["jpeg", "jpg"],
+                },
+              ],
+              title: "Save the wallpaper",
+              defaultPath: await join(await downloadDir(), id),
+            });
 
-          if (!filePath) return;
+            if (!filePath) return;
 
-          const data = await getWallpaperOf(id);
+            const data = await getWallpaperOf(id);
 
-          if (!data) return;
+            if (!data) return;
 
-          await writeBinaryFile(filePath, data);
-        }}
-      />
+            await writeBinaryFile(filePath, data);
+          }}
+        />
+      )}
       <EditAction />
       {prompts.length > 1 && <DeleteAction />}
     </>
