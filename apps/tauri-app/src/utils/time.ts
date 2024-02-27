@@ -15,7 +15,7 @@ export const calculateRemainingTime = (eventTime: Date) => {
         const minutes = Math.floor(seconds / 60);
         timeLeftString = `in ${minutes} minute${minutes > 1 ? 's' : ''}`;
     } else if (seconds > 0) {
-        timeLeftString = `in less than 1 minute`;
+        timeLeftString = `soon`;
     }
 
     return timeLeftString

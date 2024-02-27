@@ -8,9 +8,9 @@ import { VscChromeMinimize } from "react-icons/vsc";
 
 import { Button } from "@acme/ui/button";
 
-import type { StatusEnum } from "~/lib/WallpaperGenerator";
+import type { WallpaperEngineStatus } from "~/lib/WallpaperGenerator";
 import Spinner from "~/app/_components/Spinner";
-import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator/hooks";
+import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
 import { TempStore } from "~/stores/temp";
 import { IntervalsInMinute, UserStore } from "~/stores/user";
 import { calculateRemainingTime } from "~/utils/time";
@@ -51,7 +51,7 @@ const Titlebar = () => {
         UPSCALING: "Upscaling the Wallpaper",
         FINALIZING: "Finalizing",
         CANCELING: "Canceling",
-      } satisfies Partial<Record<StatusEnum, string>>;
+      } satisfies Partial<Record<WallpaperEngineStatus, string>>;
 
       switch (status) {
         case "INITIALIZING":
@@ -66,12 +66,12 @@ const Titlebar = () => {
           );
           break;
         case "IDLE": {
-          if (interval === "off") {
+          if (interval === "OFF") {
             result = <>Idle</>;
             break;
           }
 
-          if (!lastGenerationTimestamp || interval === "immediately") {
+          if (!lastGenerationTimestamp) {
             result = (
               <>
                 <Spinner />

@@ -4,10 +4,12 @@ import React, { useEffect } from "react";
 import { trackEvent } from "@aptabase/tauri";
 import { useElementSize } from "@mantine/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { primaryMonitor } from "@tauri-apps/api/window";
 import { attachConsole } from "tauri-plugin-log-api";
 
 import { ScrollArea } from "@acme/ui/scroll-area";
 
+import { UserStore } from "~/stores/user";
 import Navbar from "./components/Navbar";
 import Titlebar from "./components/Titlebar";
 
@@ -49,6 +51,21 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handler = async () => {
+      const monitor = await primaryMonitor();
+
+      if (!monitor) return;
+
+      await UserStore.screenSize.set({
+        x: monitor.size.width,
+        y: monitor.size.height,
+      });
+    };
+
+    void handler()
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Titlebar />
@@ -56,7 +73,7 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
 
       <div
         ref={viewportRef}
-        className="h-full max-h-max min-h-max flex-1 px-4 py-6 lg:px-8"
+        className="flex-1 px-4 py-6 lg:px-8"
       >
         <ScrollArea style={{ height }}>{children}</ScrollArea>
       </div>

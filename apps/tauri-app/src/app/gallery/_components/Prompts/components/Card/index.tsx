@@ -9,7 +9,7 @@ import Spinner from "~/app/_components/Spinner";
 import { UserStore } from "~/stores/user";
 import { saveWallpaperFiles } from "~/utils/wallpapers";
 
-export type CardProps = Omit<PromptCardData, "image">;
+export type CardProps = Omit<PromptCardData, "imageSrc">;
 
 const Card: React.FC<CardProps> = ({ id, prompt }) => {
   const router = useRouter();
@@ -20,10 +20,7 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
   return (
     <PromptCard
       id={id}
-      image={{
-        source: imageSrc,
-        status: "loading",
-      }}
+      imageSrc={imageSrc}
       prompt={prompt}
       actions={
         <>

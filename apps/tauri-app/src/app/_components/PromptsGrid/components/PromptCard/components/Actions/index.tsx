@@ -1,7 +1,7 @@
 import type { IconType } from "react-icons/lib";
 import React from "react";
 import { save } from "@tauri-apps/api/dialog";
-import { writeBinaryFile } from "@tauri-apps/api/fs";
+import { copyFile } from "@tauri-apps/api/fs";
 import { downloadDir, join } from "@tauri-apps/api/path";
 import { IoStopOutline } from "react-icons/io5";
 import { LuDownload, LuRefreshCcw } from "react-icons/lu";
@@ -10,10 +10,9 @@ import { cn } from "@acme/ui";
 
 import { ActionButton, usePromptContext } from "~/app/_components/PromptCard";
 import Spinner from "~/app/_components/Spinner";
-import { useWallpapersSourceStore } from "~/lib/WallpaperFile";
-import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator/hooks";
+import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
 import { UserStore } from "~/stores/user";
-import { getWallpaperOf } from "~/utils/wallpapers";
+import { getWallpaperPathOf } from "~/utils/wallpapers";
 import DeleteAction from "./components/DeleteAction";
 import EditAction from "./components/EditAction";
 
@@ -26,15 +25,19 @@ const SpinningStopIcon: IconType = (props) => {
   );
 };
 
-const Actions: React.FC = () => {
+type ActionsProps = {
+  hasImage: boolean;
+};
+
+const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
   const prompts = UserStore.prompts.useValue();
   const { id } = usePromptContext();
-  const { cancel, generate, status, usingPrompt } = useWallpaperEngineStore();
-  const source = useWallpapersSourceStore(
-    (state) => state.wallpapers[id] ?? null,
-  );
-  const isThisGenerating = usingPrompt?.id === id && status !== "IDLE";
-  const isAnotherGenerating = usingPrompt?.id !== id && status !== "IDLE";
+  const { cancel, generateByPromptId, status, usingPrompt } =
+    useWallpaperEngineStore();
+
+  const isIdle = status === "IDLE";
+  const isThisGenerating = !isIdle && usingPrompt?.id === id;
+  const isAnotherGenerating = !isIdle && usingPrompt?.id !== id;
 
   return (
     <>
@@ -47,7 +50,7 @@ const Actions: React.FC = () => {
       {!isThisGenerating && (
         <ActionButton
           Icon={LuRefreshCcw}
-          onClick={() => generate(id)}
+          onClick={() => generateByPromptId(id)}
           disabled={isAnotherGenerating}
           tooltip={
             isAnotherGenerating ? (
@@ -56,11 +59,11 @@ const Actions: React.FC = () => {
           }
         />
       )}
-      {source && (
+      {hasImage && (
         <ActionButton
           Icon={LuDownload}
           onClick={async () => {
-            const filePath = await save({
+            const destinationPath = await save({
               filters: [
                 {
                   name: "Image",
@@ -71,13 +74,13 @@ const Actions: React.FC = () => {
               defaultPath: await join(await downloadDir(), id),
             });
 
-            if (!filePath) return;
+            if (!destinationPath) return;
 
-            const data = await getWallpaperOf(id);
+            const sourcePath = await getWallpaperPathOf(id);
 
-            if (!data) return;
+            if (!sourcePath) return;
 
-            await writeBinaryFile(filePath, data);
+            await copyFile(sourcePath, destinationPath);
           }}
         />
       )}

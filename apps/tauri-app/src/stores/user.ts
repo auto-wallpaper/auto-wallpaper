@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { makeField, makeStore } from "./makeStore";
 import { promptEngine } from "~/lib/PromptEngine";
-import { changeWallpaper } from "~/utils/commands";
+import { refreshWallpaper } from "~/utils/commands";
 import { enable, isEnabled, disable } from "tauri-plugin-autostart-api";
 import { log } from "~/utils/log";
 
@@ -66,27 +66,24 @@ export const UserStore = makeStore(".user.dat", {
   selectedPrompt: makeField({
     schema: z.string().uuid(),
     defaultValue: defaultPrompts[0]!.id,
-    async onChange(promptId) {
-      await changeWallpaper({ promptId })
+    async onChange() {
+      await refreshWallpaper()
     }
   }),
   interval: makeField({
     schema: z.enum([
-      "off",
-      "immediately",
-      "1m",
-      "2m",
-      "5m",
-      "10m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "6h",
-      "12h",
-      "1d"
+      "OFF",
+      "FIVE_MINS",
+      "TEN_MINS",
+      "FIFTEEN_MINS",
+      "THIRTEENS",
+      "ONE_HOUR",
+      "TWO_HOURS",
+      "SIX_HOURS",
+      "TWELVE_HOURS",
+      "ONE_DAY"
     ]),
-    defaultValue: "15m"
+    defaultValue: "FIFTEEN_MINS"
   }),
   autostart: makeField({
     schema: z.boolean(),
@@ -116,38 +113,43 @@ export const UserStore = makeStore(".user.dat", {
         }
       }
     },
+  }),
+  screenSize: makeField({
+    schema: z.object({
+      x: z.number(),
+      y: z.number(),
+    }),
+    defaultValue: {
+      x: 1,
+      y: 1
+    },
   })
 });
 
 export const IntervalTexts: Record<typeof UserStore.interval.$inferOutput, string> = {
-  "off": "Off - The wallpaper will not be generated automatically",
-  "immediately": "Immediately",
-  "1m": "1 Minute",
-  "2m": "2 Minutes",
-  "5m": "5 Minutes",
-  "10m": "10 Minutes",
-  "15m": "15 Minutes",
-  "30m": "30 Minutes",
-  "1h": "1 Hour",
-  "2h": "2 Hours",
-  "6h": "6 Hours",
-  "12h": "12 Hours",
-  "1d": "1 Day"
+  "OFF": "Off - The wallpaper will not be generated automatically",
+  "FIVE_MINS": "5 Minutes",
+  "TEN_MINS": "10 Minutes",
+  "FIFTEEN_MINS": "15 Minutes",
+  "THIRTEENS": "30 Minutes",
+  "ONE_HOUR": "1 Hour",
+  "TWO_HOURS": "2 Hours",
+  "SIX_HOURS": "6 Hours",
+  "TWELVE_HOURS": "12 Hours",
+  "ONE_DAY": "1 Day"
 }
 
 export const IntervalsInMinute: Record<
-  Exclude<typeof UserStore.interval.$inferOutput, "off" | "immediately">,
+  Exclude<typeof UserStore.interval.$inferOutput, "OFF">,
   number
 > = {
-  "1m": 1,
-  "2m": 2,
-  "5m": 5,
-  "10m": 10,
-  "15m": 15,
-  "30m": 30,
-  "1h": 60,
-  "2h": 60 * 2,
-  "6h": 60 * 6,
-  "12h": 60 * 12,
-  "1d": 60 * 24,
+  "FIVE_MINS": 5,
+  "TEN_MINS": 10,
+  "FIFTEEN_MINS": 15,
+  "THIRTEENS": 30,
+  "ONE_HOUR": 60,
+  "TWO_HOURS": 60 * 2,
+  "SIX_HOURS": 60 * 6,
+  "TWELVE_HOURS": 60 * 12,
+  "ONE_DAY": 60 * 24,
 };

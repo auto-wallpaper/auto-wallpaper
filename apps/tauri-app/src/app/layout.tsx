@@ -8,13 +8,6 @@ import "~/app/globals.css";
 
 import dynamic from "next/dynamic";
 
-const WallpaperGenerationProvider = dynamic(
-  () => import("./_components/WallpaperGenerationProvider"),
-  {
-    ssr: false,
-  },
-);
-
 const Layout = dynamic(() => import("./_components/Layout"), {
   ssr: false,
 });
@@ -29,9 +22,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           GeistMono.variable,
         )}
       >
-        <WallpaperGenerationProvider>
-          <Layout>{props.children}</Layout>
-        </WallpaperGenerationProvider>
+        <Layout>{props.children}</Layout>
         <Toaster />
       </body>
     </html>

@@ -1,70 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { create } from "zustand";
 
-import { toBase64 } from "~/utils/strConvertors";
-import { getWallpaperOf } from "~/utils/wallpapers";
+import { getWallpaperPathOf } from "~/utils/wallpapers";
 
-type WallpapersSourceState = {
-  wallpapers: Record<string, string>;
-  setWallpaperSource: (promptId: string, source: string) => void;
+type WallpaperSourceState = {
+  sources: Record<string, string | null>;
+  refresh: (promptId: string) => Promise<void>;
+  exists: (promptId: string) => boolean;
 };
 
-export const useWallpapersSourceStore = create<WallpapersSourceState>((set) => ({
-  wallpapers: {},
-  setWallpaperSource(promptId: string, source: string) {
-    set((prev) => ({
-      wallpapers: { ...prev.wallpapers, [promptId]: source },
-    }));
-  },
-}));
+export const useWallpaperSourceStore = create<WallpaperSourceState>(
+  (set, get) => ({
+    sources: {},
+    async refresh(promptId) {
+      const filePath = await getWallpaperPathOf(promptId);
 
-export const setWallpaperSource = async (promptId: string) => {
-  const imageData = await getWallpaperOf(promptId);
-  if (!imageData) {
-    return;
-  }
-
-  const base64 = await toBase64(imageData);
-
-  useWallpapersSourceStore.getState().setWallpaperSource(promptId, base64);
-};
+      set((prev) => ({
+        sources: {
+          ...prev.sources,
+          [promptId]: filePath && `${convertFileSrc(filePath)}?t=${Date.now()}`,
+        },
+      }));
+    },
+    exists(promptId) {
+      return promptId in get().sources;
+    },
+  }),
+);
 
 export const useWallpaperSource = (promptId: string) => {
-  const source = useWallpapersSourceStore(
-    (state) => state.wallpapers[promptId] ?? null,
-  );
-  const setSource = useWallpapersSourceStore(
-    (state) => state.setWallpaperSource,
-  );
-  const [status, setStatus] = useState<"loading" | "error" | "finished">(
-    "loading",
+  const refresh = useWallpaperSourceStore((state) => state.refresh);
+  const exists = useWallpaperSourceStore((state) => state.exists);
+  const source = useWallpaperSourceStore(
+    (state) => state.sources[promptId] ?? null,
   );
 
   useEffect(() => {
-    const handler = async () => {
-      try {
-        setStatus("loading");
-        const imageData = await getWallpaperOf(promptId);
-
-        if (!imageData) {
-          setStatus("finished");
-          return;
-        }
-
-        const base64 = await toBase64(imageData);
-        setSource(promptId, base64);
-        setStatus("finished");
-      } catch (e) {
-        setStatus("error");
-        throw e;
-      }
-    };
-
-    void handler();
-  }, [promptId, setSource]);
+    if (!exists(promptId)) {
+      void refresh(promptId);
+    }
+  }, [promptId, refresh, exists]);
 
   return {
     source,
-    status,
+    refresh: useMemo(() => refresh.bind(null, promptId), [promptId, refresh]),
   };
 };

@@ -1,23 +1,27 @@
 import type { BinaryFileContents } from "@tauri-apps/api/fs";
-import { BaseDirectory, exists, readBinaryFile, removeDir, createDir, writeBinaryFile } from "@tauri-apps/api/fs"
-import { join } from "@tauri-apps/api/path"
+import { BaseDirectory, exists, removeDir, createDir, writeBinaryFile } from "@tauri-apps/api/fs"
+import { appDataDir, join } from "@tauri-apps/api/path"
 
-export const getWallpaperOf = async (promptId: string) => {
-    if (!await exists(promptId, { dir: BaseDirectory.AppData })) {
+export const getWallpaperPathOf = async (promptId: string) => {
+    const promptDir = await join(await appDataDir(), promptId)
+
+    if (!await exists(promptDir)) {
         return null
     }
 
-    const upscalePath = await join(promptId, "upscale.jpeg")
+    const upscalePath = await join(promptDir, "upscale.jpeg")
 
-    if (await exists(promptId, { dir: BaseDirectory.AppData })) {
-        return readBinaryFile(upscalePath, { dir: BaseDirectory.AppData })
+    if (await exists(upscalePath)) {
+        return upscalePath
     }
 
-    const wallpaperPath = await join(promptId, "original.jpeg")
+    const originalPath = await join(promptDir, "original.jpeg")
 
-    if (await exists(promptId, { dir: BaseDirectory.AppData })) {
-        return readBinaryFile(wallpaperPath, { dir: BaseDirectory.AppData })
+    if (await exists(originalPath)) {
+        return originalPath
     }
+
+    return null
 }
 
 export const removeWallpaperFiles = async (promptId: string) => {

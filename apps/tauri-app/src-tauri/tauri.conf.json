@@ -14,6 +14,12 @@
     "macOSPrivateApi": true,
     "allowlist": {
       "all": false,
+      "protocol": {
+        "asset": true,
+        "assetScope": [
+          "$APPDATA/**/*"
+        ]
+      },
       "dialog": {
         "save": true
       },
@@ -23,6 +29,7 @@
         "exists": true,
         "readFile": true,
         "removeDir": true,
+        "copyFile": true,
         "scope": [
           "$APPDATA",
           "$APPDATA/*",
@@ -95,7 +102,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/; style-src 'self' 'unsafe-inline'"
     },
     "updater": {
       "active": true,
