@@ -21,10 +21,7 @@ import { VARIABLE_REGEX } from "~/lib/PromptEngine";
 export type PromptCardData = {
   id: string;
   prompt: string;
-  image: {
-    source: ImageProps["src"] | null;
-    status: "loading" | "finished" | "error";
-  };
+  imageSrc: ImageProps["src"] | null;
 };
 
 const PromptContext = createContext<PromptCardData>(null as never);
@@ -53,9 +50,9 @@ type PromptCardProps = PromptCardData & {
 };
 
 export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
-  ({ id, image, prompt, className, actions, onSelect }, ref) => {
+  ({ id, imageSrc, prompt, className, actions, onSelect }, ref) => {
     return (
-      <PromptContext.Provider value={{ id, prompt, image }}>
+      <PromptContext.Provider value={{ id, prompt, imageSrc }}>
         <div
           ref={ref}
           id={id}
@@ -67,29 +64,20 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
           onClick={() => onSelect?.()}
         >
           <span className="absolute bottom-0 left-0 right-0 top-0 flex h-full w-full flex-col items-center justify-center text-sm">
-            {image.source ? (
+            {imageSrc ? (
               <Image
-                src={image.source}
+                src={imageSrc}
                 alt=""
                 fill
                 className="rounded-md object-cover"
               />
-            ) : image.status === "loading" ? (
-              <div className="text-center">
-                <p>Loading the Image</p>
-              </div>
-            ) : image.status === "finished" ? (
+            ) : (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
                   <MdOutlineImageNotSupported />
                   <p>No Image Yet.</p>
                 </div>
                 <p>Generate one to show here</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p>Unexpected Error</p>
-                <p>during loading image</p>
               </div>
             )}
           </span>
@@ -101,7 +89,7 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
           <div
             className={cn(
               "absolute bottom-0 left-0 z-10 mt-auto h-max w-full rounded-b-md px-2 pb-4 pt-32",
-              image.source && "bg-gradient-to-t from-black/90 to-transparent",
+              imageSrc && "bg-gradient-to-t from-black/90 to-transparent",
             )}
           >
             <p className="line-clamp-3 text-center text-xs">
@@ -122,7 +110,7 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
   },
 );
 
-PromptCard.displayName = "PromptCard"
+PromptCard.displayName = "PromptCard";
 
 export const PromptsGrid: React.FC<React.PropsWithChildren> = ({
   children,
@@ -147,15 +135,15 @@ export const ActionButton = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <TooltipProvider>
         <Tooltip open={typeof tooltip === "undefined" ? false : undefined}>
-          <TooltipTrigger ref={ref} className="cursor-pointer" asChild>
+          <TooltipTrigger ref={ref} asChild>
             <Button
               size="icon"
               className={cn(
-                "bg-transparent shadow-none transition-all hover:bg-zinc-950/30 disabled:cursor-default disabled:opacity-25",
+                "cursor-pointer bg-transparent shadow-none transition-all hover:bg-zinc-950/30",
                 className,
+                disabled && "cursor-default opacity-25",
               )}
-              onClick={onClick}
-              disabled={disabled}
+              onClick={disabled ? undefined : onClick}
             >
               <Icon size={18} />
             </Button>

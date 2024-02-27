@@ -16,7 +16,7 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
   data: { id, prompt },
 }) => {
   const selectedPromptId = UserStore.selectedPrompt.useValue();
-  const { source, status } = useWallpaperSource(id);
+  const { source } = useWallpaperSource(id);
   const [hash] = useHash();
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -31,11 +31,11 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
       ref={cardRef}
       id={id}
       prompt={prompt}
-      image={{ source, status }}
+      imageSrc={source}
       className={{
         root: selectedPromptId === id && "border-zinc-200",
       }}
-      actions={<Actions />}
+      actions={<Actions hasImage={!!source} />}
       onSelect={() => UserStore.selectedPrompt.set(id)}
     />
   );

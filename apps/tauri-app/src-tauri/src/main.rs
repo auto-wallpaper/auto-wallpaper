@@ -4,63 +4,41 @@
     windows_subsystem = "windows"
 )]
 
-use log::info;
-use log::LevelFilter;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
-use tauri::Manager;
-use tauri::SystemTrayEvent;
-use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_log::fern::colors::ColoredLevelConfig;
-use tauri_plugin_log::LogTarget;
-use wallpaper;
-use window_shadows::set_shadow;
-
-#[derive(Clone, serde::Serialize)]
-struct SingleInstancePayload {
-    args: Vec<String>,
-    cwd: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ChangeGenerateWallpaperTrayStatePayload {
-    is_generating: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ChangeWallpaperPayload {
-    prompt_id: String,
-}
-
-const APTABASE_KEY: &str = "A-EU-5389767615";
-
+mod commands;
+mod libs;
+mod states;
 mod tray;
 mod utils;
 
-#[tauri::command]
-fn change_wallpaper(app_handle: tauri::AppHandle, prompt_id: String) {
-    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
-    let prompt_dir = utils::append_to_path(&app_data_dir, &("/".to_owned() + prompt_id.as_str()));
+use std::ops::Add;
 
-    let upscale_image_path = utils::append_to_path(&prompt_dir, "/upscale.jpeg");
+use crate::{
+    libs::{
+        store::StoreManager,
+        wallpaper_engine::{
+            managers::{
+                status::WallpaperEngineStatusManager,
+                using_prompt::WallpaperEngineUsingPromptManager,
+            },
+            WallpaperEngine,
+        },
+    },
+    states::wallpaper_engine::{
+        WallpaperEngineStatusStore, WallpaperEngineStore, WallpaperEngineUsingPromptStore,
+    },
+};
 
-    if upscale_image_path.exists() {
-        wallpaper::set_from_path(upscale_image_path.to_str().unwrap())
-            .expect("cannot set wallpaper");
-        return;
-    }
+use chrono::{DateTime, Duration, Utc};
+use log::{info, LevelFilter};
+use serde::Deserialize;
+use serde_json::json;
+use tauri::{Manager, SystemTrayEvent};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget};
+use tokio::time::sleep;
+use window_shadows::set_shadow;
 
-    let original_image_path = utils::append_to_path(&prompt_dir, "/original.jpeg");
-
-    if original_image_path.exists() {
-        wallpaper::set_from_path(original_image_path.to_str().unwrap())
-            .expect("cannot set wallpaper");
-
-        return;
-    }
-
-    info!("Wallpaper not found");
-}
+const APTABASE_KEY: &str = "A-EU-5389767615";
 
 fn build_main_window(app: &tauri::AppHandle) {
     match tauri::WindowBuilder::new(
@@ -117,9 +95,114 @@ fn main() {
 
             set_shadow(&window, true).expect("Unsupported platform!");
 
+            app.manage(WallpaperEngineStatusStore {
+                status: WallpaperEngineStatusManager::new(app.app_handle()).into(),
+            });
+            app.manage(WallpaperEngineUsingPromptStore {
+                using_prompt: WallpaperEngineUsingPromptManager::new(app.app_handle()).into(),
+            });
+            app.manage(WallpaperEngineStore {
+                wallpaper_engine: WallpaperEngine::new(app.app_handle()).into(),
+            });
+
+            let temp_store = StoreManager::make_temp_store(app.app_handle());
+            let user_store = StoreManager::make_user_store(app.app_handle());
+
+            #[derive(Debug, Deserialize, PartialEq)]
+            #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+            enum Intervals {
+                Off,
+                FiveMins,
+                TenMins,
+                FifteenMins,
+                Thirteens,
+                OneHour,
+                TwoHours,
+                SixHours,
+                TwelveHours,
+                OneDay,
+            }
+
+            fn interval_to_duration(interval: Intervals) -> Duration {
+                match interval {
+                    Intervals::Off => Duration::zero(),
+                    Intervals::FiveMins => Duration::minutes(5),
+                    Intervals::TenMins => Duration::minutes(10),
+                    Intervals::FifteenMins => Duration::minutes(15),
+                    Intervals::Thirteens => Duration::minutes(30),
+                    Intervals::OneHour => Duration::hours(1),
+                    Intervals::TwoHours => Duration::hours(2),
+                    Intervals::SixHours => Duration::hours(6),
+                    Intervals::TwelveHours => Duration::hours(12),
+                    Intervals::OneDay => Duration::days(1),
+                }
+            }
+
+            let app_handle = app.app_handle();
+
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    sleep(Duration::seconds(1).to_std().unwrap()).await;
+
+                    let interval = match user_store.get::<Intervals>("interval") {
+                        Ok(v) => v.unwrap(),
+                        Err(_) => continue,
+                    };
+
+                    if interval == Intervals::Off {
+                        continue;
+                    }
+
+                    let last_generation_timestamp =
+                        match temp_store.get::<String>("lastGenerationTimestamp") {
+                            Ok(v) => match v {
+                                Some(v) => v,
+                                None => continue,
+                            },
+                            Err(_) => continue,
+                        };
+
+                    let last_generation_date =
+                        match last_generation_timestamp.parse::<DateTime<Utc>>() {
+                            Ok(v) => v,
+                            Err(_) => continue,
+                        };
+
+                    if (Utc::now().timestamp_millis()
+                        - last_generation_date
+                            .timestamp_millis()
+                            .add(interval_to_duration(interval).num_milliseconds()))
+                        > 0
+                    {
+                        match app_handle
+                            .state::<WallpaperEngineStore>()
+                            .wallpaper_engine
+                            .lock()
+                            .await
+                            .generate_selected_prompt()
+                            .await
+                        {
+                            Ok(_) => {
+                                println!("mission completed!");
+                            }
+                            Err(e) => {
+                                println!("Error: {:?}", e);
+                            }
+                        }
+                    };
+                }
+            });
+
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![change_wallpaper])
+        .invoke_handler(tauri::generate_handler![
+            commands::wallpaper_engine::generate_selected_prompt,
+            commands::wallpaper_engine::generate_by_prompt_id,
+            commands::wallpaper_engine::get_using_prompt,
+            commands::wallpaper_engine::get_status,
+            commands::wallpaper_engine::cancel,
+            commands::wallpaper::refresh_wallpaper,
+        ])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview, LogTarget::LogDir])
@@ -156,6 +239,12 @@ fn main() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            #[derive(Clone, serde::Serialize)]
+            struct SingleInstancePayload {
+                args: Vec<String>,
+                cwd: String,
+            }
+
             info!("{}, {argv:?}, {cwd}", app.package_info().name);
 
             app.emit_all("single-instance", SingleInstancePayload { args: argv, cwd })
