@@ -7,6 +7,10 @@ on:
       - v*.*.*
   workflow_dispatch:
 
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
 jobs:
   release:
     permissions:
