@@ -2,32 +2,60 @@
     "minVersion": "0.1.5",
     "prompts": [
         {
-            "id": "09ab4efa-104d-4187-8433-bf2219cdfbc2",
-            "prompt": "Very big Hogwarts during a dark and horrifying night"
+            "id": "a9697008-1906-4947-8cdb-66a187419bbb",
+            "prompt": "People walking and cars driving in the city during the $DAY_TIME with $WEATHER"
         },
         {
-            "id": "27b0af07-44c6-4874-a777-31fac41404dc",
-            "prompt": "golden horrifying skeleton in black background"
-        },
-        {
-            "id": "66ed4bd5-3156-4048-96bb-64962d044d48",
-            "prompt": "Tbilisi city during the $DAY_TIME with $WEATHER, capturing scenes of people and cars."
-        },
-        {
-            "id": "866794c0-d2d9-4c42-9da8-45cfff5de4f8",
-            "prompt": "View from a webcam pov showing a man programming seems like we are in a laptop screen"
-        },
-        {
-            "id": "a940587b-5d31-43b1-8335-edd93c6488a5",
-            "prompt": "Speeding car with in dirt during rainy day"
-        },
-        {
-            "id": "de53af71-3fd4-4f1f-a073-e3492ac724a2",
+            "id": "5f2f6b6b-d084-4df2-944d-a8bd26383473",
             "prompt": "Off-Roading and drifting during the $DAY_TIME with $WEATHER, capturing scenes of people and cars."
         },
         {
-            "id": "e3e8b737-b49a-49a3-ab83-4f5ef31a946c",
-            "prompt": "The Mars planet in the future with astronauts"
+            "id": "2d2688c7-b6df-497a-93a3-832859c841eb",
+            "prompt": "farm of colorful flowers"
+        },
+        {
+            "id": "77e350a9-6542-4d61-b9b5-5144e16f6d73",
+            "prompt": "A surreal sky with floating islands, each home to a different ecosystem, lit by a mesmerizing moon that changes color as it moves across the sky"
+        },
+        {
+            "id": "636734c5-f880-4112-b29d-2702d96d43b7",
+            "prompt": "An intergalactic highway stretching across a backdrop of distant planets, with neon-lit cities nestled among asteroid clusters, space stations, and bustling starships"
+        },
+        {
+            "id": "267f3704-7243-449f-ba68-9df5e442d619",
+            "prompt": "A dragon perched atop a spire of a mystical castle, while knights on flying horses engage in a thrilling aerial battle, all set against a backdrop of a magical forest"
+        },
+        {
+            "id": "6642d723-487c-4c5d-93e2-c467ccbf3acb",
+            "prompt": "A rainy night in a neon-lit city, where shadows are cast by towering skyscrapers and the streets are alive with bustling crowds and futuristic vehicles"
+        },
+        {
+            "id": "8f469b73-82d1-437e-8af2-63456121743a",
+            "prompt": "A field of dandelions stretching as far as the eye can see, each one transforming into a different creature or object as it's blown away by the wind"
+        },
+        {
+            "id": "1b8969f5-7eb8-475d-9110-e32fa4f1f5a3",
+            "prompt": "A grand airship sailing through the clouds, powered by gears and steam, with a crew of adventurers on a quest to uncover the secrets of a lost civilization"
+        },
+        {
+            "id": "b4299ff0-5038-4716-a138-5bc2c351dcb0",
+            "prompt": "A vibrant explosion of colors and shapes, each one representing a different emotion or idea, swirling together to create a dynamic and visually striking image"
+        },
+        {
+            "id": "9266e7b7-068a-4774-a1e5-d824282d16b5",
+            "prompt": "A serene forest scene, with animals of all shapes and sizes living in harmony among the trees, accompanied by the gentle sound of a babbling brook"
+        },
+        {
+            "id": "bf34a964-24df-441b-a048-77f2258e5723",
+            "prompt": "A bustling marketplace where people of all cultures come together to trade goods, share stories, and celebrate their differences, all against a backdrop of colorful, traditional architecture"
+        },
+        {
+            "id": "5fe9d172-de08-4890-aa85-5714e3559c38",
+            "prompt": "Science Fiction scene of warriors walking around a beacon that is having a laser to the sky at night and spaceships are in the sky waiting for the war to start "
+        },
+        {
+            "id": "35061ddc-dda3-4770-8ebb-9cd24e3cce24",
+            "prompt": "golden horrifying skeleton in a dark background"
         }
     ]
 }
