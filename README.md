@@ -18,6 +18,12 @@
 **Mac:** 
    - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.8_x64.dmg)
 
+### Screenshots
+
+![prompts page](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/31743eea-95f8-42db-bd21-89b36ceb30b7)
+![edit prompt form](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/dffab9e1-907b-45c3-a78f-606ac77c4652)
+![settings](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/5d231b57-2ac0-4de1-9159-ae4bdef927b0)
+
 ### Features
 
 - [x] AI-generated wallpapers: Create unique and personalized wallpapers based on your environment.
