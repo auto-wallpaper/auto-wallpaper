@@ -9,7 +9,7 @@ import { log } from "~/utils/log";
 const defaultPrompts = [
   {
     id: crypto.randomUUID(),
-    prompt: "Paris during the $DAY_TIME with $WEATHER, capturing scenes of people and cars.",
+    prompt: "Speeding car on the Mars planet during raining weather",
   }
 ]
 
