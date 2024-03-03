@@ -5,6 +5,7 @@ pub mod structs;
 use std::{io, time::Duration};
 
 use chrono::Utc;
+use log::error;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::Manager;
@@ -117,8 +118,8 @@ impl WallpaperEngine {
                         break;
                     }
 
-                    println!(
-                        "Wallpaper generation has been failed. trying again. {:?}",
+                    error!(
+                        "Wallpaper generation has been failed. trying again. the error: {:?}",
                         error
                     );
 

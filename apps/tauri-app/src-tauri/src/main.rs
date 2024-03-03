@@ -29,7 +29,7 @@ use crate::{
 };
 
 use chrono::{DateTime, Duration, Utc};
-use log::{info, LevelFilter};
+use log::{error, info, LevelFilter};
 use serde::Deserialize;
 use serde_json::json;
 use tauri::{Manager, SystemTrayEvent};
@@ -93,7 +93,9 @@ fn main() {
         .setup(|app| {
             let window = app.get_window("main").unwrap();
 
-            set_shadow(&window, true).expect("Unsupported platform!");
+            if let Err(_) = set_shadow(&window, true) {
+                info!("Shadow is not supported for this platform");
+            }
 
             app.manage(WallpaperEngineStatusStore {
                 status: WallpaperEngineStatusManager::new(app.app_handle()).into(),
@@ -186,10 +188,10 @@ fn main() {
                             .await
                         {
                             Ok(_) => {
-                                println!("mission completed!");
+                                info!("mission completed!");
                             }
                             Err(e) => {
-                                println!("Error: {:?}", e);
+                                error!("Error: {:?}", e);
                             }
                         }
                     };

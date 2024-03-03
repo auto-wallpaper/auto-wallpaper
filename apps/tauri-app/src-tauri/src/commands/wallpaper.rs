@@ -1,3 +1,5 @@
+use log::error;
+
 use crate::libs::device_wallpaper::{DeviceWallpaper, DeviceWallpaperError};
 
 #[tauri::command]
@@ -6,7 +8,7 @@ pub fn refresh_wallpaper(app_handle: tauri::AppHandle) -> Result<(), String> {
         Ok(_) => Ok(()),
         Err(error) => match error {
             DeviceWallpaperError::WallpaperNotFound => {
-                println!("Error: {:?}", error);
+                error!("Device Wallpaper Change Error: {:?}", error);
                 Ok(())
             }
             _ => Err(format!("{:?}", error)),
