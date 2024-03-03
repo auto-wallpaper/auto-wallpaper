@@ -8,19 +8,19 @@
 ### Download links:
 
 **Windows:**  
-   - [.exe installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.9_x64-setup.exe) 
-   - [.msi installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.9_x64_en-US.msi)
+   - [.exe installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.10_x64-setup.exe) 
+   - [.msi installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.10_x64_en-US.msi)
 
 **Linux:** 
-   - [Debian package](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.9_amd64.deb) 
-   - [AppImage](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.9_amd64.AppImage)
+   - [Debian package](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.10_amd64.deb) 
+   - [AppImage](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.10_amd64.AppImage)
    
-**Mac:** 
-   - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.9_x64.dmg)
+**Mac:*10 
+10 - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.10_x64.dmg)
 
 ### Screenshots
 
-![prompts page](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/31743eea-95f8-42db-bd21-89b36ceb30b7)
+![p10ompts page](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/31743eea-95f8-42db-bd21-89b36ceb30b7)
 ![edit prompt form](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/dffab9e1-907b-45c3-a78f-606ac77c4652)
 ![settings](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/5d231b57-2ac0-4de1-9159-ae4bdef927b0)
 
