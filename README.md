@@ -15,8 +15,8 @@
    - [Debian package](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.10_amd64.deb) 
    - [AppImage](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.1.10_amd64.AppImage)
    
-**Mac:*10 
-10 - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.10_x64.dmg)
+**Mac:** 
+   - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.1.10_x64.dmg)
 
 ### Screenshots
 
