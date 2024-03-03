@@ -43,7 +43,7 @@ Honestly, my goal was to take a look at [Tauri](https://tauri.app/) and learn it
 This project is purely for educational purposes and is not intended for commercial gain. It will remain open-source indefinitely.
 
 This application utilizes automated interactions with other web services:
-- [leonardo.io](https://leonardo.io/) for image generation 
+- [leonardo.ai](https://leonardo.ai/) for image generation 
 - [temp-mail.io](https://temp-mail.io/) for temp emails
 - [iloveimg.com](https://www.iloveimg.com/upscale-image) for image upscaling
 
