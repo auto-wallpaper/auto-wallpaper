@@ -1,3 +1,4 @@
+use log::{error, info};
 use tauri::State;
 
 use crate::{
@@ -22,14 +23,14 @@ pub async fn generate_selected_prompt(
         .await
     {
         Ok(_) => {
-            println!("mission completed!");
+            info!("mission completed!");
         }
         Err(error) => {
             match error {
-                WallpaperEngineError::Canceled => println!("Wallpaper generation has been canceled"),
-                WallpaperEngineError::MoreThanOneGenerationAtOnceError => println!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
+                WallpaperEngineError::Canceled => info!("Wallpaper generation has been canceled"),
+                WallpaperEngineError::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
                 _ => {
-                    println!("Error: {:?}", error);
+                    error!("Error: {:?}", error);
                     return Err(format!("{:?}", error));        
                 }
             };
@@ -52,14 +53,14 @@ pub async fn generate_by_prompt_id(
         .await
     {
         Ok(_) => {
-            println!("mission completed!");
+            info!("mission completed!");
         }
         Err(error) => {
             match error {
-                    WallpaperEngineError::Canceled => println!("Wallpaper generation has been canceled"),
-                    WallpaperEngineError::MoreThanOneGenerationAtOnceError => println!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
+                    WallpaperEngineError::Canceled => info!("Wallpaper generation has been canceled"),
+                    WallpaperEngineError::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
                     _ => {
-                        println!("Error: {:?}", error);
+                        error!("Error: {:?}", error);
                         return Err(format!("{:?}", error));        
                     }
                 };
@@ -99,7 +100,7 @@ pub async fn cancel(
     {
         Ok(result) => Ok(result),
         Err(e) => {
-            println!("Error: {:?}", e);
+            error!("Error: {:?}", e);
             Err(format!("{:?}", e))
         }
     }
