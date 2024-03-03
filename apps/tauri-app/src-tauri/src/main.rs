@@ -145,7 +145,12 @@ fn main() {
                     sleep(Duration::seconds(1).to_std().unwrap()).await;
 
                     let interval = match user_store.get::<Intervals>("interval") {
-                        Ok(v) => v.unwrap(),
+                        Ok(v) => {
+                            match v {
+                                Some(v) => v,
+                                None => continue
+                            }
+                        },
                         Err(_) => continue,
                     };
 

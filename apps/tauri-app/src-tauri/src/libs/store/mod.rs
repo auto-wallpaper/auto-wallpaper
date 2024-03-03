@@ -24,7 +24,7 @@ impl StoreManager {
             path: PathBuf::from(path),
         }
     }
-
+    
     pub fn get<T: DeserializeOwned>(
         &self,
         key: &str,

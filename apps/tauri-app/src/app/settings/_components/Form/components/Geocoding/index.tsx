@@ -21,7 +21,7 @@ import type { UserStore } from "~/stores/user";
 
 type GeocodingResponse = {
   generationtime_ms: number;
-  results: (typeof UserStore.location.$inferOutput)[];
+  results: Exclude<(typeof UserStore.location.$inferOutput), null>[];
 };
 
 type GeocodingProps = {

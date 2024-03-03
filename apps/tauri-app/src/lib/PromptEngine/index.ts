@@ -45,7 +45,7 @@ class PromptEngine {
                     if (!cache[variableName]) {
                         const value = await this.handleVariable(variableName);
 
-                        if (!value) {
+                        if (value === null) {
                             throw new Error(`No value has been set for ${item[0]} variable`);
                         }
 
@@ -85,23 +85,17 @@ export const promptEngine = new PromptEngine();
 promptEngine.addVariable("LOCATION_NAME", async () => {
     const location = await UserStore.location.get()
 
-    if (!location) throw new Error("location not defined")
-
-    return location.name
+    return location?.name ?? ""
 })
 
 promptEngine.addVariable("COUNTRY", async () => {
     const location = await UserStore.location.get()
 
-    if (!location) throw new Error("location not defined")
-
-    return location.country
+    return location?.country ?? ""
 })
 
 promptEngine.addVariable("DAY_TIME", async () => {
     const location = await UserStore.location.get()
-
-    if (!location) throw new Error("location not defined")
 
     const map = {
         Midnight: [0, 6],
@@ -115,7 +109,7 @@ promptEngine.addVariable("DAY_TIME", async () => {
     } as const;
 
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-US', { timeZone: location.timezone, hour: "numeric", hourCycle: "h24" });
+    const formatter = new Intl.DateTimeFormat('en-US', { timeZone: location?.timezone, hour: "numeric", hourCycle: "h24" });
     const h = +(formatter.formatToParts(now).find(part => part.type === 'hour')?.value ?? now.getHours());
 
     const [dayTime] = Object.entries(map).find(([_, [start, end]]) => {
@@ -189,7 +183,11 @@ let cache: Cache = null
 promptEngine.addVariable("WEATHER", async () => {
     const location = await UserStore.location.get()
 
-    if (!location) throw new Error("location not defined")
+    if (!location) {
+        console.log("location not defined")
+
+        return ""
+    }
 
     if (cache && (cache.cachedAt.getTime() + 60_000 > Date.now() || cache.locationId !== location?.id)) return cache.data
 

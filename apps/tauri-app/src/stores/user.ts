@@ -36,7 +36,7 @@ export const UserStore = makeStore(".user.dat", {
       admin2: z.string().optional(),
       admin3: z.string().optional(),
       admin4: z.string().optional(),
-    })
+    }).nullable()
   }),
   prompts: makeField({
     schema: z.object({
