@@ -4,6 +4,6 @@ import { makeField, makeStore } from "./makeStore";
 
 export const TempStore = makeStore(".temp.dat", {
     lastGenerationTimestamp: makeField({
-        schema: z.coerce.date(),
+        schema: z.coerce.date().nullable(),
     })
 });
