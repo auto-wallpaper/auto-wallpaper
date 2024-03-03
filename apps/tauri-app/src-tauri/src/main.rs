@@ -145,11 +145,9 @@ fn main() {
                     sleep(Duration::seconds(1).to_std().unwrap()).await;
 
                     let interval = match user_store.get::<Intervals>("interval") {
-                        Ok(v) => {
-                            match v {
-                                Some(v) => v,
-                                None => continue
-                            }
+                        Ok(v) => match v {
+                            Some(v) => v,
+                            None => continue,
                         },
                         Err(_) => continue,
                     };
@@ -218,21 +216,16 @@ fn main() {
         )
         .plugin(
             tauri_plugin_aptabase::Builder::new(APTABASE_KEY)
-                .with_panic_hook(Box::new(|client, info| {
+                .with_panic_hook(Box::new(|client, info, msg| {
                     let location = info
                         .location()
                         .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
                         .unwrap_or_else(|| "".to_string());
 
-                    let payload = match info.payload().downcast_ref::<&str>() {
-                        Some(p) => p,
-                        None => "ERROR PAYLOAD COULD NOT PARSED",
-                    };
-
                     client.track_event(
                         "panic",
                         Some(json!({
-                          "info": format!("{} ({})", payload, location),
+                          "info": format!("{} ({})", msg, location),
                         })),
                     );
                 }))
