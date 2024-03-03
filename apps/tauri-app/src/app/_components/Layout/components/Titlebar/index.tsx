@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { appWindow } from "@tauri-apps/api/window";
 import { IoCloseOutline } from "react-icons/io5";
-import { LuMaximize, LuMinimize } from "react-icons/lu";
+import { LuMaximize, LuMinimize, LuRefreshCcw } from "react-icons/lu";
 import { VscChromeMinimize } from "react-icons/vsc";
 
 import { Button } from "@acme/ui/button";
@@ -74,7 +74,8 @@ const Titlebar = () => {
           if (!lastGenerationTimestamp) {
             result = (
               <>
-                <Spinner />
+                You have not generated anything yet. generate one using the{" "}
+                <LuRefreshCcw /> button
               </>
             );
             break;
