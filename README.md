@@ -20,7 +20,7 @@
 
 ### Screenshots
 
-![p10ompts page](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/31743eea-95f8-42db-bd21-89b36ceb30b7)
+![pompts page](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/31743eea-95f8-42db-bd21-89b36ceb30b7)
 ![edit prompt form](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/dffab9e1-907b-45c3-a78f-606ac77c4652)
 ![settings](https://github.com/auto-wallpaper/auto-wallpaper/assets/52349766/5d231b57-2ac0-4de1-9159-ae4bdef927b0)
 
@@ -47,7 +47,7 @@ This project is built using the `created-t3-turbo` template (https://github.com/
 
 - **Node.js:** Version 20.10.0 or above
 - **pnpm:** Version 8.15.0 or above (other package managers are not supported)
-- **Rust and Tauri prerequisites:** Follow the official Tauri documentation: https://tauri.app/v1/guides/getting-started/setup/
+- **Rust and Tauri prerequisites:** Follow the official Tauri documentation: https://tauri.app/v1/guides/getting-started/prerequisites
 
 #### Getting Started:
 
