@@ -39,6 +39,33 @@ Any PR is welcome :)
 ### Why I made this application?
 Honestly, my goal was to take a look at [Tauri](https://tauri.app/) and learn it. So I built this open-source and non-profit project. Any PR is welcome and if you found a bug, i will be so glad if you report it in [issues](https://github.com/auto-wallpaper/auto-wallpaper/issues).
 
+### Development Environment
+
+This project is built using the `created-t3-turbo` template (https://github.com/t3-oss/create-t3-turbo), which utilizes `Turborepo` (https://turbo.build/repo/docs) and focuses on TypeScript. It currently has a single application, `tauri-app`, developed with Tauri (https://tauri.app/). The project is currently undergoing migration from Tauri v1 to v2.
+
+#### Prerequisites:
+
+- **Node.js:** Version 20.10.0 or above
+- **pnpm:** Version 8.15.0 or above (other package managers are not supported)
+- **Rust and Tauri prerequisites:** Follow the official Tauri documentation: https://tauri.app/v1/guides/getting-started/setup/
+
+#### Getting Started:
+
+1. **Fork and Clone this project.**
+2. **Install dependencies:** Navigate to the project's root directory and run `pnpm i`.
+3. **Available commands:**
+   - `pnpm dev -F tauri-app`: Starts the application in development mode.
+   - `pnpm build -F tauri-app`: Builds the application for local execution.
+   - `pnpm add -F tauri-app <package-name>`: Adds a new package to the project.
+
+#### Note for Local Development:
+
+To run the application locally, make sure to disable the updater in `apps/tauri-app/src-tauri/tauri.conf.json`. Set `tauri.updater.active` to `false`. This is because the updater requires a private key, which is not set for local development environments. If you want to use your own updater signature, refer to the Tauri documentation: https://tauri.app/v1/guides/distribution/updater/
+
+#### Contributions:
+
+We welcome your contributions! Feel free to share your ideas, experiences, and pull requests (PRs) to help improve the project.
+
 ### DISCLAIMER
 This project is purely for educational purposes and is not intended for commercial gain. It will remain open-source indefinitely.
 
