@@ -16,6 +16,7 @@ use tokio::{
 };
 
 use crate::{
+    states::prompt_engine::PromptEngineStore,
     utils::{append_to_path, generate_string},
     WallpaperEngineStatusStore, WallpaperEngineUsingPromptStore,
 };
@@ -73,6 +74,12 @@ impl WallpaperEngine {
         let selected_prompt_id = self.user_store.get::<String>("selectedPrompt")?.unwrap();
 
         self.generate_by_prompt_id(&selected_prompt_id).await
+    }
+
+    fn get_prompt_engine(&self) -> tauri::State<'_, PromptEngineStore> {
+        let store = self.app_handle.state::<PromptEngineStore>();
+
+        store
     }
 
     fn get_status(&self) -> tauri::State<'_, WallpaperEngineStatusStore> {
@@ -391,11 +398,19 @@ impl WallpaperEngine {
             .unwrap()
             .prompt;
 
+        let generated_prompt = self
+            .get_prompt_engine()
+            .prompt_engine
+            .lock()
+            .await
+            .generate(prompt)
+            .await?;
+
         let leonardo = self.get_leonardo();
 
         let generation_id = leonardo
             .create_sd_generation_job(
-                prompt,
+                generated_prompt,
                 1,
                 if screen_size.x > screen_size.y {
                     1536
@@ -504,7 +519,7 @@ impl WallpaperEngine {
         if !parent.exists() {
             create_dir_all(parent).await?;
         }
-        
+
         let mut file = File::create(file_path).await?;
 
         file.write_all(&file_data).await?;

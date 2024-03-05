@@ -18,7 +18,7 @@ type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
   get: () => Promise<Value<z.output<TSchema>, TDefaultValue>>;
   validate: (value: z.input<TSchema>) => Promise<z.output<TSchema>>;
   onChange: (cb: (value: Value<z.output<TSchema>, TDefaultValue>) => void) => Promise<() => void>;
-  useValue: () => Value<z.output<TSchema>, TDefaultValue>;
+  useValue: () => Value<z.output<TSchema>, TDefaultValue> | null;
 }
 
 export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue extends z.input<TSchema>>(
@@ -65,9 +65,7 @@ export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue exten
         return store.onKeyChange(key, cb)
       },
       useValue: () => {
-        const [value, setValue] = useState<Value<z.output<TSchema>, typeof defaultValue>>(
-          () => defaultValue ? schema.parse(defaultValue) : null,
-        );
+        const [value, setValue] = useState<Value<z.output<TSchema>, typeof defaultValue> | null>(null);
 
         useEffect(() => {
           let unlisten: (() => void) | undefined;

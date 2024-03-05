@@ -29,8 +29,9 @@ import {
 } from "@acme/ui/hover-card";
 import { Textarea } from "@acme/ui/textarea";
 
-import { promptEngine } from "~/lib/PromptEngine";
+// import { promptEngine } from "~/lib/PromptEngine";
 import { UserStore } from "~/stores/user";
+import { generatePrompt } from "~/utils/commands";
 
 const NewPrompt: React.FC = () => {
   const [builtPrompt, setBuiltPrompt] = useState("");
@@ -57,9 +58,9 @@ const NewPrompt: React.FC = () => {
     const handler = async () => {
       if (!form.formState.isValid || form.formState.isValidating) return;
 
-      const builtPrompt = await promptEngine.build(formValues.prompt);
+      // const builtPrompt = await promptEngine.build(formValues.prompt);
 
-      setBuiltPrompt(builtPrompt);
+      setBuiltPrompt(await generatePrompt(formValues.prompt));
     };
 
     void handler();

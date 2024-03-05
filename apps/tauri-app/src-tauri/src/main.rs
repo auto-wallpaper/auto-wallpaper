@@ -14,6 +14,7 @@ use std::ops::Add;
 
 use crate::{
     libs::{
+        prompt_engine::PromptEngine,
         store::StoreManager,
         wallpaper_engine::{
             managers::{
@@ -23,8 +24,11 @@ use crate::{
             WallpaperEngine,
         },
     },
-    states::wallpaper_engine::{
-        WallpaperEngineStatusStore, WallpaperEngineStore, WallpaperEngineUsingPromptStore,
+    states::{
+        prompt_engine::PromptEngineStore,
+        wallpaper_engine::{
+            WallpaperEngineStatusStore, WallpaperEngineStore, WallpaperEngineUsingPromptStore,
+        },
     },
 };
 
@@ -97,6 +101,9 @@ fn main() {
                 info!("Shadow is not supported for this platform");
             }
 
+            app.manage(PromptEngineStore {
+                prompt_engine: PromptEngine::new(app.app_handle()).into(),
+            });
             app.manage(WallpaperEngineStatusStore {
                 status: WallpaperEngineStatusManager::new(app.app_handle()).into(),
             });
@@ -207,6 +214,8 @@ fn main() {
             commands::wallpaper_engine::get_status,
             commands::wallpaper_engine::cancel,
             commands::wallpaper::refresh_wallpaper,
+            commands::prompt::generate_prompt,
+            commands::prompt::validate_prompt,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

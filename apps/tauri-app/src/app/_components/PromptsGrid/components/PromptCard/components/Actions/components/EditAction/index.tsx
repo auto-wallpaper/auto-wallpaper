@@ -27,10 +27,10 @@ import {
 } from "@acme/ui/hover-card";
 import { Textarea } from "@acme/ui/textarea";
 
-import { promptEngine } from "~/lib/PromptEngine";
-import { UserStore } from "~/stores/user";
-import Action from "../Action";
 import { usePromptContext } from "~/app/_components/PromptCard";
+import { UserStore } from "~/stores/user";
+import { generatePrompt } from "~/utils/commands";
+import Action from "../Action";
 
 const EditAction: React.FC = () => {
   const { id, prompt } = usePromptContext();
@@ -59,9 +59,7 @@ const EditAction: React.FC = () => {
     const handler = async () => {
       if (!form.formState.isValid || form.formState.isValidating) return;
 
-      const builtPrompt = await promptEngine.build(formValues.prompt);
-
-      setBuiltPrompt(builtPrompt);
+      setBuiltPrompt(await generatePrompt(formValues.prompt));
     };
 
     void handler();

@@ -16,7 +16,8 @@ import {
   TooltipTrigger,
 } from "@acme/ui/tooltip";
 
-import { VARIABLE_REGEX } from "~/lib/PromptEngine";
+// import { VARIABLE_REGEX } from "~/lib/PromptEngine";
+export const VARIABLE_REGEX = /\$([\w_]+)/g;
 
 export type PromptCardData = {
   id: string;

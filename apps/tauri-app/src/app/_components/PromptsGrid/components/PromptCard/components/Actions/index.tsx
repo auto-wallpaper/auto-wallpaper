@@ -85,7 +85,7 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
         />
       )}
       <EditAction />
-      {prompts.length > 1 && <DeleteAction />}
+      {prompts && prompts.length > 1 && <DeleteAction />}
     </>
   );
 };

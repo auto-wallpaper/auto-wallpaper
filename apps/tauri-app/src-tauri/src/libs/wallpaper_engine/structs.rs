@@ -2,7 +2,7 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 
-use crate::libs::device_wallpaper::DeviceWallpaperError;
+use crate::libs::{device_wallpaper::DeviceWallpaperError, prompt_engine::PromptEngineError};
 
 use super::{
     managers::using_prompt::WallpaperEngineUsingPromptError, models::leonardo::GraphqlRequestError,
@@ -26,6 +26,7 @@ pub enum WallpaperEngineError {
     UpdateUsernameError,
     AIGenerateTimeout,
     UnexpectedError,
+    PromptEngineError(PromptEngineError),
     DeviceWallpaperError(DeviceWallpaperError),
     GraphQLError(GraphqlRequestError),
     NetworkError(reqwest::Error),
@@ -73,5 +74,11 @@ impl From<DeviceWallpaperError> for WallpaperEngineError {
 impl From<tauri_plugin_store::Error> for WallpaperEngineError {
     fn from(err: tauri_plugin_store::Error) -> Self {
         WallpaperEngineError::StorePluginError(err)
+    }
+}
+
+impl From<PromptEngineError> for WallpaperEngineError {
+    fn from(err: PromptEngineError) -> Self {
+        WallpaperEngineError::PromptEngineError(err)
     }
 }
