@@ -73,7 +73,7 @@ const SettingsForm: React.FC = () => {
       location: UserStore.location.schema.nullable(),
     }),
     values: {
-      interval: UserStore.interval.useValue(),
+      interval: UserStore.interval.useValue() ?? "FIFTEEN_MINS",
       location: UserStore.location.useValue(),
     },
     mode: "all",

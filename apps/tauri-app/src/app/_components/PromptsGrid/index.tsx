@@ -12,7 +12,10 @@ const UserPrompts: React.FC = () => {
   const prompts = UserStore.prompts.useValue();
 
   const sortedPrompts = useMemo(
-    () => [...prompts].sort((a, b) => sortByDate(a.createdAt, b.createdAt)),
+    () =>
+      prompts
+        ? [...prompts].sort((a, b) => sortByDate(a.createdAt, b.createdAt))
+        : [],
     [prompts],
   );
 

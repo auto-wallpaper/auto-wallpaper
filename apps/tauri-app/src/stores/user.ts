@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 import { makeField, makeStore } from "./makeStore";
-import { promptEngine } from "~/lib/PromptEngine";
-import { refreshWallpaper } from "~/utils/commands";
+import { refreshWallpaper, validatePrompt } from "~/utils/commands";
 import { enable, isEnabled, disable } from "tauri-plugin-autostart-api";
 import { log } from "~/utils/log";
 
@@ -29,7 +28,7 @@ export const UserStore = makeStore(".user.dat", {
       admin4_id: z.number().optional(),
       timezone: z.string(),
       population: z.number().optional(),
-      postcodes: z.number().array().optional(),
+      postcodes: z.string().array().optional(),
       country_id: z.number(),
       country: z.string(),
       admin1: z.string(),
@@ -41,21 +40,17 @@ export const UserStore = makeStore(".user.dat", {
   prompts: makeField({
     schema: z.object({
       id: z.string().uuid().default(() => crypto.randomUUID()),
-      prompt: z.string().min(3).max(1000).superRefine((v, ctx) => {
+      prompt: z.string().min(3).max(1000).superRefine(async (v, ctx) => {
         try {
-          promptEngine.validate(v)
+          await validatePrompt(v)
         } catch (e) {
-          if (e && typeof e === "object" && "message" in e) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.invalid_string,
-              message: e.message as string,
-              validation: "regex"
-            })
-            return e.message
-          }
+          ctx.addIssue({
+            code: z.ZodIssueCode.invalid_string,
+            message: e as string,
+            validation: "regex"
+          })
 
-          void log.wallpaperGeneration.error(e)
-          throw e
+          return e
         }
       }),
       createdAt: z.coerce.date().default(() => new Date()),
