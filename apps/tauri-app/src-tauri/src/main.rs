@@ -233,12 +233,16 @@ fn main() {
                         .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
                         .unwrap_or_else(|| "".to_string());
 
+                    let message = format!("{} ({})", msg, location);
+
                     client.track_event(
                         "panic",
                         Some(json!({
-                          "info": format!("{} ({})", msg, location),
+                          "info": &message,
                         })),
                     );
+
+                    error!("[panic] {}", message);
                 }))
                 .build(),
         )

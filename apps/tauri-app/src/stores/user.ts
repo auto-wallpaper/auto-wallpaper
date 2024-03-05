@@ -3,7 +3,6 @@ import { z } from "zod";
 import { makeField, makeStore } from "./makeStore";
 import { refreshWallpaper, validatePrompt } from "~/utils/commands";
 import { enable, isEnabled, disable } from "tauri-plugin-autostart-api";
-import { log } from "~/utils/log";
 
 const defaultPrompts = [
   {
@@ -91,8 +90,6 @@ export const UserStore = makeStore(".user.dat", {
           await enable()
         } catch (e) {
           await UserStore.autostart.set(false)
-
-          void log.wallpaperGeneration.error(e)
           throw e
         }
       }
@@ -102,8 +99,6 @@ export const UserStore = makeStore(".user.dat", {
           await disable()
         } catch (e) {
           await UserStore.autostart.set(true)
-
-          void log.wallpaperGeneration.error(e)
           throw e
         }
       }

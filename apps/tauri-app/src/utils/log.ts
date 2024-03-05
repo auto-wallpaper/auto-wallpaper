@@ -41,28 +41,10 @@ const makeLogMessage = (messages: unknown[]) => {
         .join(" ")
 }
 
-const makeLog = ({ file }: { file: string }) => {
-    return {
-        info: (...messages: unknown[]) => info(makeLogMessage(messages), {
-            file
-        }),
-        error: (...messages: unknown[]) => error(makeLogMessage(messages), {
-            file
-        }),
-        warn: (...messages: unknown[]) => warn(makeLogMessage(messages), {
-            file
-        }),
-        debug: (...messages: unknown[]) => debug(makeLogMessage(messages), {
-            file
-        }),
-        trace: (...messages: unknown[]) => trace(makeLogMessage(messages), {
-            file
-        }),
-    }
-}
-
 export const log = {
-    wallpaperGeneration: makeLog({
-        file: "wallpaper-generation.log"
-    })
+    info: (...messages: unknown[]) => info(makeLogMessage(messages)),
+    error: (...messages: unknown[]) => error(makeLogMessage(messages)),
+    warn: (...messages: unknown[]) => warn(makeLogMessage(messages)),
+    debug: (...messages: unknown[]) => debug(makeLogMessage(messages)),
+    trace: (...messages: unknown[]) => trace(makeLogMessage(messages)),
 }
