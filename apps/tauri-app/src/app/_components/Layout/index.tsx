@@ -18,18 +18,10 @@ addEventListener("unhandledrejection", (e) => {
   const message = (e.reason?.message || e.reason || e).toString();
 
   log.error("[promise_rejected]", message);
-
-  trackEvent("promise_rejected", {
-    message,
-  });
 });
 
 window.addEventListener("error", (e) => {
   log.error("[js_error]", e.message);
-
-  trackEvent("js_error", {
-    message: e.message,
-  });
 });
 
 void attachConsole();
