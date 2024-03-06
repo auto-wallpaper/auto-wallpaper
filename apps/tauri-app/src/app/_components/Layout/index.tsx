@@ -10,19 +10,18 @@ import { attachConsole } from "tauri-plugin-log-api";
 import { ScrollArea } from "@acme/ui/scroll-area";
 
 import { UserStore } from "~/stores/user";
+import { log } from "~/utils/log";
 import Navbar from "./components/Navbar";
 import Titlebar from "./components/Titlebar";
 
 addEventListener("unhandledrejection", (e) => {
-  trackEvent("promise_rejected", {
-    message: (e.reason?.message || e.reason || e).toString(),
-  });
+  const message = (e.reason?.message || e.reason || e).toString();
+
+  log.error("[promise_rejected]", message);
 });
 
 window.addEventListener("error", (e) => {
-  trackEvent("js_error", {
-    message: e.message,
-  });
+  log.error("[js_error]", e.message);
 });
 
 void attachConsole();
@@ -63,7 +62,7 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
       });
     };
 
-    void handler()
+    void handler();
   }, []);
 
   return (
@@ -71,10 +70,7 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
       <Titlebar />
       <Navbar />
 
-      <div
-        ref={viewportRef}
-        className="flex-1 px-4 py-6 lg:px-8"
-      >
+      <div ref={viewportRef} className="flex-1 px-4 py-6 lg:px-8">
         <ScrollArea style={{ height }}>{children}</ScrollArea>
       </div>
     </QueryClientProvider>

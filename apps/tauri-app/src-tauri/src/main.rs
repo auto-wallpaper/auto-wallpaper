@@ -10,7 +10,10 @@ mod states;
 mod tray;
 mod utils;
 
-use std::ops::Add;
+use std::{
+    ops::Add,
+    panic::{self, PanicInfo},
+};
 
 use crate::{
     libs::{
@@ -32,17 +35,19 @@ use crate::{
     },
 };
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Datelike, Duration, Utc};
 use log::{error, info, LevelFilter};
 use serde::Deserialize;
 use serde_json::json;
 use tauri::{Manager, SystemTrayEvent};
+use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget};
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
 const APTABASE_KEY: &str = "A-EU-5389767615";
+const SENTRY_DSN: &str = "https://c09db2fc4cffce9266db5d582f232e8f@o4506859582586880.ingest.us.sentry.io/4506859587043328";
 
 fn build_main_window(app: &tauri::AppHandle) {
     match tauri::WindowBuilder::new(
@@ -66,7 +71,40 @@ fn build_main_window(app: &tauri::AppHandle) {
     };
 }
 
+fn get_panic_message(info: &PanicInfo) -> String {
+    let payload = info.payload();
+
+    if let Some(s) = payload.downcast_ref::<&str>() {
+        return s.to_string();
+    }
+
+    if let Some(s) = payload.downcast_ref::<String>() {
+        return s.to_string();
+    }
+
+    format!("{:?}", payload)
+}
+
 fn main() {
+    let _client = sentry_tauri::sentry::init((
+        SENTRY_DSN,
+        sentry_tauri::sentry::ClientOptions {
+            release: sentry_tauri::sentry::release_name!(),
+            ..Default::default()
+        },
+    ));
+
+    panic::set_hook(Box::new(|info| {
+        let location = info
+            .location()
+            .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
+            .unwrap_or_else(|| "".to_string());
+
+        let message = format!("{} ({})", get_panic_message(info), location);
+
+        error!("[panic] {}", message);
+    }));
+
     tauri::Builder::default()
         .system_tray(tray::init_system_tray())
         .on_system_tray_event(|app, event| match event {
@@ -114,9 +152,6 @@ fn main() {
                 wallpaper_engine: WallpaperEngine::new(app.app_handle()).into(),
             });
 
-            let temp_store = StoreManager::make_temp_store(app.app_handle());
-            let user_store = StoreManager::make_user_store(app.app_handle());
-
             #[derive(Debug, Deserialize, PartialEq)]
             #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
             enum Intervals {
@@ -150,6 +185,9 @@ fn main() {
             let app_handle = app.app_handle();
 
             tauri::async_runtime::spawn(async move {
+                let temp_store = StoreManager::make_temp_store(app_handle.clone());
+                let user_store = StoreManager::make_user_store(app_handle.clone());
+
                 loop {
                     sleep(Duration::seconds(1).to_std().unwrap()).await;
 
@@ -205,6 +243,35 @@ fn main() {
                 }
             });
 
+            let mut temp_store = StoreManager::make_temp_store(app.app_handle());
+
+            let last_active_track_event_day = match temp_store.get::<u32>("lastActiveTrackEventDay")
+            {
+                Ok(v) => match v {
+                    Some(v) => v,
+                    None => 0,
+                },
+                Err(_) => 0,
+            };
+
+            let now = Utc::now();
+            let day = now.day();
+
+            if day > last_active_track_event_day {
+                app.track_event(
+                    "app_started",
+                    Some(json!({
+                        "date": format!("{}", now.format("%d/%m/%Y")),
+                        "date_time": format!("{}", now.format("%d/%m/%Y %H:%M")),
+                        "count": None::<String>
+                    })),
+                );
+
+                temp_store
+                    .set("lastActiveTrackEventDay", day.into())
+                    .unwrap();
+            };
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -217,6 +284,7 @@ fn main() {
             commands::prompt::generate_prompt,
             commands::prompt::validate_prompt,
         ])
+        .plugin(sentry_tauri::plugin())
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview, LogTarget::LogDir])
@@ -225,23 +293,7 @@ fn main() {
                 .level(LevelFilter::Info)
                 .build(),
         )
-        .plugin(
-            tauri_plugin_aptabase::Builder::new(APTABASE_KEY)
-                .with_panic_hook(Box::new(|client, info, msg| {
-                    let location = info
-                        .location()
-                        .map(|loc| format!("{}:{}:{}", loc.file(), loc.line(), loc.column()))
-                        .unwrap_or_else(|| "".to_string());
-
-                    client.track_event(
-                        "panic",
-                        Some(json!({
-                          "info": format!("{} ({})", msg, location),
-                        })),
-                    );
-                }))
-                .build(),
-        )
+        .plugin(tauri_plugin_aptabase::Builder::new(APTABASE_KEY).build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
