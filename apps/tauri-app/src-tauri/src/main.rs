@@ -35,10 +35,12 @@ use crate::{
     },
 };
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Datelike, Duration, Utc};
 use log::{error, info, LevelFilter};
 use serde::Deserialize;
+use serde_json::json;
 use tauri::{Manager, SystemTrayEvent};
+use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget};
 use tokio::time::sleep;
@@ -150,9 +152,6 @@ fn main() {
                 wallpaper_engine: WallpaperEngine::new(app.app_handle()).into(),
             });
 
-            let temp_store = StoreManager::make_temp_store(app.app_handle());
-            let user_store = StoreManager::make_user_store(app.app_handle());
-
             #[derive(Debug, Deserialize, PartialEq)]
             #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
             enum Intervals {
@@ -186,6 +185,9 @@ fn main() {
             let app_handle = app.app_handle();
 
             tauri::async_runtime::spawn(async move {
+                let temp_store = StoreManager::make_temp_store(app_handle.clone());
+                let user_store = StoreManager::make_user_store(app_handle.clone());
+
                 loop {
                     sleep(Duration::seconds(1).to_std().unwrap()).await;
 
@@ -240,6 +242,35 @@ fn main() {
                     };
                 }
             });
+
+            let mut temp_store = StoreManager::make_temp_store(app.app_handle());
+
+            let last_active_track_event_day = match temp_store.get::<u32>("lastActiveTrackEventDay")
+            {
+                Ok(v) => match v {
+                    Some(v) => v,
+                    None => 0,
+                },
+                Err(_) => 0,
+            };
+
+            let now = Utc::now();
+            let day = now.day();
+
+            if day > last_active_track_event_day {
+                app.track_event(
+                    "app_started",
+                    Some(json!({
+                        "date": format!("{}", now.format("%d/%m/%Y")),
+                        "date_time": format!("{}", now.format("%d/%m/%Y %H:%M")),
+                        "count": None::<String>
+                    })),
+                );
+
+                temp_store
+                    .set("lastActiveTrackEventDay", day.into())
+                    .unwrap();
+            };
 
             Ok(())
         })
