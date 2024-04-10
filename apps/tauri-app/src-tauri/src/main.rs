@@ -257,7 +257,7 @@ fn main() {
             let now = Utc::now();
             let day = now.day();
 
-            if day > last_active_track_event_day {
+            if day != last_active_track_event_day {
                 app.track_event(
                     "app_started",
                     Some(json!({
