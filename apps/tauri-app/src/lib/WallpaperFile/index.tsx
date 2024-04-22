@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { create } from "zustand";
 
 import { getWallpaperPathOf } from "~/utils/wallpapers";

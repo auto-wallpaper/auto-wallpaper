@@ -55,7 +55,7 @@ pub struct PromptEngine {
 }
 
 impl PromptEngine {
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
+    pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
             user_store: StoreManager::make_user_store(app_handle),
             cache: None,

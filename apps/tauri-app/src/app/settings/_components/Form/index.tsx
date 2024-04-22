@@ -1,10 +1,10 @@
 "use client";
 
-import type { UpdateResult } from "@tauri-apps/api/updater";
+import type { Update } from "@tauri-apps/plugin-updater";
 import React, { useEffect, useState } from "react";
-import { getVersion } from "@tauri-apps/api/app";
 import { emit } from "@tauri-apps/api/event";
-import { checkUpdate } from "@tauri-apps/api/updater";
+import { getVersion } from "@tauri-apps/api/app";
+import { check } from "@tauri-apps/plugin-updater";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
@@ -93,12 +93,12 @@ const SettingsForm: React.FC = () => {
   );
 
   const [version, setVersion] = useState("");
-  const [update, setUpdate] = useState<UpdateResult | null>(null);
+  const [update, setUpdate] = useState<Update | null>(null);
 
   useEffect(() => {
     const handler = async () => {
       setVersion(await getVersion());
-      setUpdate(await checkUpdate());
+      setUpdate(await check());
     };
 
     void handler();
@@ -184,9 +184,7 @@ const SettingsForm: React.FC = () => {
 
           <Field
             label={`Version (${
-              update?.shouldUpdate
-                ? "An update is available"
-                : "You're up to date"
+              update?.available ? "An update is available" : "You're up to date"
             })`}
             control={
               <div className="mt-1">
@@ -194,20 +192,17 @@ const SettingsForm: React.FC = () => {
                   current version: <span>v{version}</span>
                 </p>
 
-                {update?.shouldUpdate ? (
+                {update?.available ? (
                   <Button
                     className="mt-1"
                     onClick={() => void emit("tauri://update")}
                   >
-                    Update
-                    {update.manifest?.version
-                      ? ` to v${update.manifest?.version}`
-                      : ""}
+                    Update to v{update.version}
                   </Button>
                 ) : (
                   <Button
                     className="mt-1"
-                    onClick={async () => setUpdate(await checkUpdate())}
+                    onClick={async () => setUpdate(await check())}
                   >
                     check for updates
                   </Button>

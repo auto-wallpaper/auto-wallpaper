@@ -35,10 +35,10 @@ pub struct WallpaperEngineUsingPromptManager {
 }
 
 impl WallpaperEngineUsingPromptManager {
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
+    pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
-            user_store: StoreManager::make_user_store(app_handle.app_handle()),
-            app_handle,
+            user_store: StoreManager::make_user_store(app_handle),
+            app_handle: app_handle.clone(),
             using_prompt: None,
         }
     }
@@ -50,7 +50,7 @@ impl WallpaperEngineUsingPromptManager {
             if prompt.id == prompt_id {
                 self.using_prompt = Some(prompt.clone());
 
-                self.app_handle.emit_all(
+                self.app_handle.emit(
                     "wallpaper-engine-using-prompt-change",
                     UsingPromptChangeEventPayload {
                         using_prompt: Some(prompt.clone()),
@@ -67,7 +67,7 @@ impl WallpaperEngineUsingPromptManager {
     pub fn clear(&mut self) -> Result<(), tauri::Error> {
         self.using_prompt = None;
 
-        self.app_handle.emit_all(
+        self.app_handle.emit(
             "wallpaper-engine-using-prompt-change",
             UsingPromptChangeEventPayload { using_prompt: None },
         )?;

@@ -1,7 +1,7 @@
 "use client";
 
 import { listen } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { create } from "zustand";
 
 import { UserStore } from "~/stores/user";

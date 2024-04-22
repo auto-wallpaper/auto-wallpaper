@@ -10,21 +10,21 @@ pub struct StoreManager {
 }
 
 impl StoreManager {
-    pub fn make_user_store(app_handle: tauri::AppHandle) -> Self {
+    pub fn make_user_store(app_handle: &tauri::AppHandle) -> Self {
         StoreManager::new(app_handle, ".user.dat")
     }
 
-    pub fn make_temp_store(app_handle: tauri::AppHandle) -> Self {
+    pub fn make_temp_store(app_handle: &tauri::AppHandle) -> Self {
         StoreManager::new(app_handle, ".temp.dat")
     }
 
-    pub fn new(app_handle: tauri::AppHandle, path: &str) -> Self {
+    pub fn new(app_handle: &tauri::AppHandle, path: &str) -> Self {
         Self {
-            app_handle,
+            app_handle: app_handle.clone(),
             path: PathBuf::from(path),
         }
     }
-    
+
     pub fn get<T: DeserializeOwned>(
         &self,
         key: &str,

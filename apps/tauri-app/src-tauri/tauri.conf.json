@@ -1,117 +1,57 @@
 {
-  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/1.x/tooling/cli/schema.json",
   "build": {
     "beforeBuildCommand": "pnpm next:build",
     "beforeDevCommand": "pnpm next:dev",
-    "devPath": "http://localhost:4000",
-    "distDir": "../out"
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:4000"
   },
-  "package": {
-    "productName": "Auto Wallpaper",
-    "version": "./../../../package.json"
-  },
-  "tauri": {
-    "macOSPrivateApi": true,
-    "allowlist": {
-      "all": false,
-      "protocol": {
-        "asset": true,
-        "assetScope": [
-          "$APPDATA/**/*"
-        ]
-      },
-      "dialog": {
-        "save": true
-      },
-      "fs": {
-        "writeFile": true,
-        "createDir": true,
-        "exists": true,
-        "readFile": true,
-        "removeDir": true,
-        "copyFile": true,
-        "scope": [
-          "$APPDATA",
-          "$APPDATA/*",
-          "$APPDATA/**",
-          "$APPDATA/**/*"
-        ]
-      },
-      "path": {
-        "all": true
-      },
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": [
-          "https://*.iloveimg.com/*",
-          "https://api.internal.temp-mail.io/*",
-          "https://*.leonardo.ai/*",
-          "https://copilot.microsoft.com/*",
-          "https://geocoding-api.open-meteo.com/v1/search",
-          "https://api.open-meteo.com/v1/forecast",
-          "https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/*"
-        ]
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true
-      },
-      "notification": {
-        "all": true
-      }
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.auto-wallpaper.app",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
-    },
-    "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/; style-src 'self' 'unsafe-inline'"
-    },
+    }
+  },
+  "productName": "Auto Wallpaper",
+  "version": "./../../../package.json",
+  "identifier": "com.auto-wallpaper.app",
+  "plugins": {
     "updater": {
-      "active": true,
-      "dialog": true,
       "endpoints": [
         "https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0NTc4MDYyNjg1QTAzODkKUldTSkExcG9Zb0JYdEQvQnAzRDdIN1RKc29wd0VYM1RnOVc5SURKaWNWbXRYcDJid2J5Qmc3RjMK"
-    },
+    }
+  },
+  "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "fullscreen": false,
@@ -124,12 +64,27 @@
         "height": 730,
         "width": 950,
         "transparent": true,
-        "center": true
+        "center": true,
+        "shadow": true
       }
     ],
-    "systemTray": {
+    "trayIcon": {
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true
+    },
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "$APPDATA/**/*"
+        ],
+        "enable": true
+      },
+      "csp": {
+        "default-src": "'self'",
+        "img-src":"'self' asset: http://asset.localhost https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "ipc: http://ipc.localhost http://tauri.localhost"
+      }
     }
   }
 }

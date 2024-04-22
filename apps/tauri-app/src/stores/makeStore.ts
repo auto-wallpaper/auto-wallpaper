@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { Store } from "tauri-plugin-store-api";
+import { Store } from "@tauri-apps/plugin-store";
 import { useEffect, useState } from "react";
 
 type Value<TValue, TDefaultValue> = TDefaultValue extends NonNullable<unknown> ? TValue : TValue | null

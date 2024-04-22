@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useElementSize } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { fetch } from "@tauri-apps/api/http";
+import { fetch } from "@tauri-apps/plugin-http";
 import { LuCheck, LuChevronsUpDown } from "react-icons/lu";
 
 import { cn } from "@acme/ui";
@@ -21,7 +21,7 @@ import type { UserStore } from "~/stores/user";
 
 type GeocodingResponse = {
   generationtime_ms: number;
-  results: Exclude<(typeof UserStore.location.$inferOutput), null>[];
+  results: Exclude<typeof UserStore.location.$inferOutput, null>[];
 };
 
 type GeocodingProps = {
@@ -37,19 +37,22 @@ const Geocoding: React.FC<GeocodingProps> = ({ onChange, value }) => {
   const { data } = useQuery({
     queryKey: ["geocoding", search || value?.name],
     queryFn: async () => {
-      const resp = await fetch<GeocodingResponse>(
-        "https://geocoding-api.open-meteo.com/v1/search",
+      const params = new URLSearchParams();
+
+      params.set("name", (search || value?.name) ?? "");
+      params.set("count", "5");
+
+      const resp = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`,
         {
           method: "GET",
-          query: {
-            name: search || value?.name,
-            count: "5",
-          },
-          timeout: 30,
+          connectTimeout: 30_000,
         },
       );
 
-      return resp.data.results;
+      const data = await resp.json() as GeocodingResponse;
+
+      return data.results;
     },
   });
 

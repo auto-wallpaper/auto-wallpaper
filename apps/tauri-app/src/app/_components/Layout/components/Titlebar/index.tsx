@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrent } from "@tauri-apps/api/window";
 import { IoCloseOutline } from "react-icons/io5";
 import { LuMaximize, LuMinimize, LuRefreshCcw } from "react-icons/lu";
 import { VscChromeMinimize } from "react-icons/vsc";
@@ -15,10 +15,14 @@ import { TempStore } from "~/stores/temp";
 import { IntervalsInMinute, UserStore } from "~/stores/user";
 import { calculateRemainingTime } from "~/utils/time";
 
+const appWindow = typeof window === "undefined" ? null : getCurrent();
+
 const Titlebar = () => {
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
+    if (!appWindow) return;
+
     let unlisten: (() => void) | null = null;
 
     const handler = async () => {
@@ -124,7 +128,7 @@ const Titlebar = () => {
           className="flex h-full w-full items-center gap-2 px-2 text-sm text-zinc-600"
           data-tauri-drag-region
           onClick={async () => {
-            await appWindow.startDragging();
+            await appWindow?.startDragging();
           }}
         >
           {status}
@@ -134,21 +138,21 @@ const Titlebar = () => {
         <Button
           variant="link"
           className="rounded-none duration-100 hover:bg-zinc-500/10"
-          onClick={() => appWindow.minimize()}
+          onClick={() => appWindow?.minimize()}
         >
           <VscChromeMinimize size={16} />
         </Button>
         <Button
           variant="link"
           className="rounded-none duration-100 hover:bg-zinc-500/10"
-          onClick={() => appWindow.toggleMaximize()}
+          onClick={() => appWindow?.toggleMaximize()}
         >
           {isMaximized ? <LuMinimize size={13} /> : <LuMaximize size={13} />}
         </Button>
         <Button
           variant="link"
           className="rounded-none duration-100 hover:bg-red-500/10"
-          onClick={() => appWindow.hide()}
+          onClick={() => appWindow?.hide()}
         >
           <IoCloseOutline size={18} />
         </Button>

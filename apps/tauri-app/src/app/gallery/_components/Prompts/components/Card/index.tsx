@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch } from "@tauri-apps/plugin-http";
 import { IoAdd } from "react-icons/io5";
 
 import type { PromptCardData } from "~/app/_components/PromptCard";
@@ -38,15 +38,16 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
               const last = prompts[prompts.length - 1]!;
 
               if (typeof imageSrc === "string") {
-                const { data: imageData } = await fetch<Uint8Array>(imageSrc, {
+                const resp = await fetch(imageSrc, {
                   method: "GET",
-                  responseType: ResponseType.Binary,
                 });
+
+                const data = new Uint8Array(await resp.arrayBuffer());
 
                 await saveWallpaperFiles({
                   promptId: last.id,
-                  originalImage: imageData,
-                  upscaleImage: imageData,
+                  originalImage: data,
+                  upscaleImage: data,
                 });
               }
 
