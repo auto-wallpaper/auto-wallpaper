@@ -3,8 +3,6 @@ run-name: "[Tauri Release] ${{ github.event.head_commit.message }}"
 
 on:
   push:
-    tags:
-      - v*.*.*
   workflow_dispatch:
 
 env:
