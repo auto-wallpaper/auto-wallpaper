@@ -61,13 +61,14 @@ jobs:
         run: |
           tag=${GITHUB_REF/refs\/tags\//}
           version=${tag#v}
-          echo "::set-output name=version::${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
           if [[ "${version}" == *"-"* ]]; then
-            echo "::set-output name=prerelease::true"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=prerelease::false"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
-
+        shell: bash
+        
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
