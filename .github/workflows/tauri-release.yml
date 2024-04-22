@@ -68,7 +68,7 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
         shell: bash
-        
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,3 +83,4 @@ jobs:
           includeUpdaterJson: true
           projectPath: apps/tauri-app
           args: ${{ matrix.args }}
+          tauriScript: "pnpm tauri"
