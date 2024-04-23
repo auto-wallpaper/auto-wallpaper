@@ -1,4 +1,4 @@
-import { debug, error, info, trace, warn } from "tauri-plugin-log-api";
+import { debug, error, info, trace, warn } from "@tauri-apps/plugin-log";
 
 const truncateObjectStringsAndArrays = <T>(obj: T, maxLength: number): T => {
     // Base case: if obj is not an object, return it as is

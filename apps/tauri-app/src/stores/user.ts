@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { makeField, makeStore } from "./makeStore";
 import { refreshWallpaper, validatePrompt } from "~/utils/commands";
-import { enable, isEnabled, disable } from "tauri-plugin-autostart-api";
+import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
 
 const defaultPrompts = [
   {

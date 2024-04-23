@@ -18,10 +18,10 @@ pub struct WallpaperEngineStatusManager {
 }
 
 impl WallpaperEngineStatusManager {
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
+    pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
             status: WallpaperEngineStatus::Idle,
-            app_handle,
+            app_handle: app_handle.clone(),
         }
     }
 
@@ -33,7 +33,7 @@ impl WallpaperEngineStatusManager {
             status: WallpaperEngineStatus,
         }
 
-        self.app_handle.emit_all(
+        self.app_handle.emit(
             "wallpaper-engine-status-change",
             StatusChangeEventPayload { status },
         )?;

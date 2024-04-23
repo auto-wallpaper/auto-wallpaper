@@ -1,7 +1,7 @@
 import type { IconType } from "react-icons/lib";
 import React from "react";
-import { save } from "@tauri-apps/api/dialog";
-import { copyFile } from "@tauri-apps/api/fs";
+import { save } from "@tauri-apps/plugin-dialog";
+import { copyFile } from "@tauri-apps/plugin-fs";
 import { downloadDir, join } from "@tauri-apps/api/path";
 import { IoStopOutline } from "react-icons/io5";
 import { LuDownload, LuRefreshCcw } from "react-icons/lu";

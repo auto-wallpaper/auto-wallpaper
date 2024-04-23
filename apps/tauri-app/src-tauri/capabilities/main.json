@@ -1,0 +1,51 @@
+{
+  "$schema": "../gen/schemas/windows-schema.json",
+  "identifier": "main",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "window:allow-primary-monitor",
+    "log:default",
+    "store:allow-has",
+    "store:allow-get",
+    "store:allow-save",
+    "store:allow-load",
+    "store:allow-set",
+    "window:allow-toggle-maximize",
+    "window:allow-hide",
+    "window:allow-is-maximized",
+    "window:allow-start-dragging",
+    "window:allow-minimize",
+    "updater:default",
+    "autostart:allow-enable",
+    "autostart:allow-is-enabled",
+    "autostart:allow-disable",
+    "dialog:allow-save",
+    "sentry:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://*.iloveimg.com/*"
+        },
+        {
+          "url": "https://api.internal.temp-mail.io/*"
+        },
+        {
+          "url": "https://*.leonardo.ai/*"
+        },
+        {
+          "url": "https://geocoding-api.open-meteo.com/v1/search"
+        },
+        {
+          "url": "https://api.open-meteo.com/v1/forecast"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/*"
+        }
+      ]
+    }
+  ]
+}

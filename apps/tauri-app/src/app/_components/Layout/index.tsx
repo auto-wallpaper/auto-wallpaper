@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { trackEvent } from "@aptabase/tauri";
 import { useElementSize } from "@mantine/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { primaryMonitor } from "@tauri-apps/api/window";
-import { attachConsole } from "tauri-plugin-log-api";
+import { attachConsole } from "@tauri-apps/plugin-log";
 
 import { ScrollArea } from "@acme/ui/scroll-area";
 

@@ -1,5 +1,4 @@
-import type { BinaryFileContents } from "@tauri-apps/api/fs";
-import { BaseDirectory, exists, removeDir, createDir, writeBinaryFile } from "@tauri-apps/api/fs"
+import { BaseDirectory, exists, remove, mkdir, writeFile } from "@tauri-apps/plugin-fs"
 import { appDataDir, join } from "@tauri-apps/api/path"
 
 export const getWallpaperPathOf = async (promptId: string) => {
@@ -25,13 +24,13 @@ export const getWallpaperPathOf = async (promptId: string) => {
 }
 
 export const removeWallpaperFiles = async (promptId: string) => {
-    await removeDir(promptId, { dir: BaseDirectory.AppData, recursive: true })
+    await remove(promptId, { baseDir: BaseDirectory.AppData, recursive: true })
 }
 
-export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId }: { upscaleImage: BinaryFileContents, originalImage: BinaryFileContents, promptId: string }) => {
-    if (!await exists(promptId, { dir: BaseDirectory.AppData })) {
-        await createDir(promptId, {
-            dir: BaseDirectory.AppData
+export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId }: { upscaleImage: Uint8Array, originalImage: Uint8Array, promptId: string }) => {
+    if (!await exists(promptId, { baseDir: BaseDirectory.AppData })) {
+        await mkdir(promptId, {
+            baseDir: BaseDirectory.AppData
         })
     }
 
@@ -39,7 +38,7 @@ export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId
     const originalPath = await join(promptId, "original.jpeg")
 
     await Promise.allSettled([
-        writeBinaryFile(upscalePath, upscaleImage, { dir: BaseDirectory.AppData }),
-        writeBinaryFile(originalPath, originalImage, { dir: BaseDirectory.AppData })
+        writeFile(upscalePath, upscaleImage, { baseDir: BaseDirectory.AppData }),
+        writeFile(originalPath, originalImage, { baseDir: BaseDirectory.AppData })
     ])
 }

@@ -46,15 +46,15 @@ pub struct WallpaperEngine {
 }
 
 impl WallpaperEngine {
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
+    pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
             leonardo: None,
             mailbox: None,
             upscale: None,
-            temp_store: StoreManager::make_temp_store(app_handle.app_handle()),
-            user_store: StoreManager::make_user_store(app_handle.app_handle()),
-            device_wallpaper: DeviceWallpaper::new(app_handle.app_handle()),
-            app_handle,
+            temp_store: StoreManager::make_temp_store(app_handle),
+            user_store: StoreManager::make_user_store(app_handle),
+            device_wallpaper: DeviceWallpaper::new(app_handle),
+            app_handle: app_handle.clone(),
         }
     }
 
@@ -159,7 +159,7 @@ impl WallpaperEngine {
                         using_prompt: Prompt,
                     }
 
-                    self.app_handle.emit_all(
+                    self.app_handle.emit(
                         "wallpaper-engine-finish",
                         FinishEventPayload {
                             using_prompt: r.clone(),
@@ -495,7 +495,7 @@ impl WallpaperEngine {
         file_data: &Vec<u8>,
         filename: &str,
     ) -> Result<(), io::Error> {
-        let app_data_dir = self.app_handle.path_resolver().app_data_dir().unwrap();
+        let app_data_dir = self.app_handle.path().app_data_dir().unwrap();
 
         let file_path = append_to_path(
             &append_to_path(
