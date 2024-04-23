@@ -75,7 +75,8 @@
     "security": {
       "assetProtocol": {
         "scope": [
-          "$APPDATA/**/*"
+          "$APPDATA/**/*",
+          "$APPCACHE/**/*"
         ],
         "enable": true
       },

@@ -10,18 +10,31 @@ type WallpaperSourceState = {
   exists: (promptId: string) => boolean;
 };
 
+const isRefreshing: Record<string, boolean> = {};
+
 export const useWallpaperSourceStore = create<WallpaperSourceState>(
   (set, get) => ({
     sources: {},
     async refresh(promptId) {
-      const filePath = await getWallpaperPathOf(promptId);
+      if (isRefreshing[promptId]) {
+        return;
+      }
 
-      set((prev) => ({
-        sources: {
-          ...prev.sources,
-          [promptId]: filePath && `${convertFileSrc(filePath)}?t=${Date.now()}`,
-        },
-      }));
+      try {
+        isRefreshing[promptId] = true;
+
+        const filePath = await getWallpaperPathOf(promptId);
+
+        set((prev) => ({
+          sources: {
+            ...prev.sources,
+            [promptId]:
+              filePath && `${convertFileSrc(filePath)}?t=${Date.now()}`,
+          },
+        }));
+      } finally {
+        isRefreshing[promptId] = false;
+      }
     },
     exists(promptId) {
       return promptId in get().sources;

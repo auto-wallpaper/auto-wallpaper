@@ -6,6 +6,7 @@
     "main"
   ],
   "permissions": [
+    "fs:allow-appcache-read-recursive",
     "fs:allow-appdata-read",
     "fs:allow-appdata-write",
     {
