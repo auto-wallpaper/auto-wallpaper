@@ -5031,7 +5031,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-sentry"
 version = "0.3.0"
-source = "git+https://github.com/arashi-dev/sentry-tauri?branch=v2#0a16f6ea318ac711948fd2133312e4f2876901c4"
+source = "git+https://github.com/arashi-dev/sentry-tauri?branch=v2#96506e1f5cd74f1a2f648b7b70abbf40a9bd7132"
 dependencies = [
  "base64 0.22.0",
  "schemars",
