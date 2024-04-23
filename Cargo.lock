@@ -4952,9 +4952,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.0.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db4476c824a1488a52f4672d2b419a71fbf3dc97249013ef3c2c08fae2a23b71"
+version = "2.0.0-beta.6"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v2#cbd930166c5f947eba6cd2be2d172ef7357951b0"
 dependencies = [
  "dunce",
  "log",
@@ -4970,9 +4969,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c138126392c350aa68554e3461529b02680062c9146ab7b41d3ef97a2deaf93b"
+version = "2.0.0-beta.6"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v2#cbd930166c5f947eba6cd2be2d172ef7357951b0"
 dependencies = [
  "anyhow",
  "glob",
@@ -4989,9 +4987,8 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.0.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f27b2c90ed5473e1c068f523927fa0024212bc3a3f3a47c2a9c0b10b4b2e3ee4"
+version = "2.0.0-beta.6"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v2#cbd930166c5f947eba6cd2be2d172ef7357951b0"
 dependencies = [
  "data-url",
  "http 1.1.0",

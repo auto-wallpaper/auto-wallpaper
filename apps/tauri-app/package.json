@@ -24,7 +24,7 @@
     "@tanstack/react-query": "^5.18.0",
     "@tanstack/react-query-devtools": "^5.17.7",
     "@tanstack/react-query-next-experimental": "5.18.0",
-    "@tauri-apps/api": "2.0.0-beta.8",
+    "@tauri-apps/api": "2.0.0-beta.9",
     "@tauri-apps/plugin-autostart": "2.0.0-beta.2",
     "@tauri-apps/plugin-dialog": "2.0.0-beta.2",
     "@tauri-apps/plugin-fs": "2.0.0-beta.2",
