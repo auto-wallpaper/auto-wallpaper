@@ -1,8 +1,8 @@
 import type { IconType } from "react-icons/lib";
 import React from "react";
-import { save } from "@tauri-apps/plugin-dialog";
-import { copyFile } from "@tauri-apps/plugin-fs";
 import { downloadDir, join } from "@tauri-apps/api/path";
+import { save } from "@tauri-apps/plugin-dialog";
+import { readFile, writeFile } from "@tauri-apps/plugin-fs";
 import { IoStopOutline } from "react-icons/io5";
 import { LuDownload, LuRefreshCcw } from "react-icons/lu";
 
@@ -15,6 +15,7 @@ import { UserStore } from "~/stores/user";
 import { getWallpaperPathOf } from "~/utils/wallpapers";
 import DeleteAction from "./components/DeleteAction";
 import EditAction from "./components/EditAction";
+import { createFilename } from "~/utils/string";
 
 const SpinningStopIcon: IconType = (props) => {
   return (
@@ -31,7 +32,7 @@ type ActionsProps = {
 
 const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
   const prompts = UserStore.prompts.useValue();
-  const { id } = usePromptContext();
+  const { id, prompt } = usePromptContext();
   const { cancel, generateByPromptId, status, usingPrompt } =
     useWallpaperEngineStore();
 
@@ -71,7 +72,7 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
                 },
               ],
               title: "Save the wallpaper",
-              defaultPath: await join(await downloadDir(), id),
+              defaultPath: await join(await downloadDir(), createFilename(prompt)),
             });
 
             if (!destinationPath) return;
@@ -80,7 +81,7 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
 
             if (!sourcePath) return;
 
-            await copyFile(sourcePath, destinationPath);
+            await writeFile(destinationPath, await readFile(sourcePath));
           }}
         />
       )}

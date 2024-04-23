@@ -6,9 +6,8 @@
     "main"
   ],
   "permissions": [
-    "fs:allow-appcache-read-recursive",
-    "fs:allow-appdata-read",
-    "fs:allow-appdata-write",
+    "fs:allow-appdata-read-recursive",
+    "fs:allow-appdata-write-recursive",
     {
       "identifier": "fs:allow-exists",
       "allow": [
@@ -39,20 +38,6 @@
     },
     {
       "identifier": "fs:allow-mkdir",
-      "allow": [
-        {
-          "path": "$APPDATA"
-        },
-        {
-          "path": "$APPDATA/*"
-        },
-        {
-          "path": "$APPDATA/**"
-        }
-      ]
-    },
-    {
-      "identifier": "fs:allow-copy-file",
       "allow": [
         {
           "path": "$APPDATA"
