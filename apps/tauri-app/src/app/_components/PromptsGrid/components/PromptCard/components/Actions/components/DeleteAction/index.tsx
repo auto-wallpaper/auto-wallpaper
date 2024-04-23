@@ -10,6 +10,7 @@ import {
 } from "@acme/ui/dialog";
 
 import { usePromptContext } from "~/app/_components/PromptCard";
+import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
 import { UserStore } from "~/stores/user";
 import { sortByDate } from "~/utils/sort";
 import { removeWallpaperFiles } from "~/utils/wallpapers";
@@ -38,19 +39,26 @@ const DeleteAction: React.FC = () => {
 
             const selectedPromptId = await UserStore.selectedPrompt.get();
 
+            const { usingPrompt, status, cancel } =
+              useWallpaperEngineStore.getState();
+
+            if ((status !== "IDLE" && status !== "CANCELING") && usingPrompt?.id === id) {
+              void cancel();
+            }
+
             void UserStore.prompts.set((prev) => {
               if (selectedPromptId === id) {
                 const sorted = [...prev].sort((a, b) =>
                   sortByDate(a.createdAt, b.createdAt),
                 );
                 const index = sorted.findIndex((prompt) => prompt.id === id);
-                const newSelectedPrompt = sorted[index + 1] ?? sorted[0];
+                const newSelectedPrompt = sorted[index + 1] ?? sorted[index - 1];
 
                 if (newSelectedPrompt) {
                   void UserStore.selectedPrompt.set(newSelectedPrompt?.id);
                 }
               }
-              
+
               return prev.filter((prompt) => prompt.id !== id);
             });
 
