@@ -76,12 +76,10 @@ fn build_main_window(app: &tauri::AppHandle) {
 fn show_window(app: &AppHandle) {
     let windows = app.webview_windows();
 
-    windows
-        .values()
-        .next()
-        .expect("Sorry, no window found")
-        .set_focus()
-        .expect("Can't Bring Window to Focus");
+    let window = windows.values().next().expect("Sorry, no window found");
+
+    window.show().expect("Can't Bring Window to Show");
+    window.set_focus().expect("Can't Bring Window to Focus");
 }
 
 fn get_panic_message(info: &PanicInfo) -> String {
