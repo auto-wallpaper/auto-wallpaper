@@ -43,6 +43,7 @@ rand = "0.8.5"
 uuid = { version = "1.7.0", features = ["v4"] }
 chrono = "0.4"
 chrono-tz = { version = "0.8.6", features = ["serde"] }
+rimage = "0.10.3"
 
 [lib]
 name = "app_lib"

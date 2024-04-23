@@ -6,7 +6,8 @@ use std::{io, time::Duration};
 
 use chrono::Utc;
 use log::error;
-use serde::{Deserialize, Serialize};
+use rimage::image::ImageError;
+use serde::Serialize;
 use serde_json::json;
 use tauri::Manager;
 use tokio::{
@@ -17,7 +18,7 @@ use tokio::{
 
 use crate::{
     states::prompt_engine::PromptEngineStore,
-    utils::{append_to_path, generate_string},
+    utils::{append_to_path, generate_string, optimize_image},
     WallpaperEngineStatusStore, WallpaperEngineUsingPromptStore,
 };
 
@@ -28,7 +29,7 @@ use self::{
         mailbox::mail_tm::MailTm as Mailbox,
         upscale::Upscale,
     },
-    structs::{Prompt, WallpaperEngineError},
+    structs::{Prompt, ScreenSize, WallpaperEngineError},
 };
 
 use super::{device_wallpaper::DeviceWallpaper, store::StoreManager};
@@ -243,6 +244,10 @@ impl WallpaperEngine {
             .await?;
 
         self.check_status().await?;
+        
+        self.optimize_image("original.jpeg").await?;
+
+        self.check_status().await?;
 
         self.get_status()
             .status
@@ -254,13 +259,17 @@ impl WallpaperEngine {
 
         self.check_status().await?;
 
+        self.save_image_file(&upscale_image, "upscale.jpeg").await?;
+
+        self.check_status().await?;
+
         self.get_status()
             .status
             .lock()
             .await
             .set(WallpaperEngineStatus::Finalizing)?;
 
-        self.save_image_file(&upscale_image, "upscale.jpeg").await?;
+        self.optimize_image("upscale.jpeg").await?;
 
         self.check_status().await?;
 
@@ -377,18 +386,6 @@ impl WallpaperEngine {
     }
 
     async fn create_sd_generation_job(&mut self) -> Result<String, WallpaperEngineError> {
-        #[derive(Debug, Deserialize)]
-        struct ScreenSize {
-            x: u32,
-            y: u32,
-        }
-
-        let screen_size = self
-            .user_store
-            .get::<ScreenSize>("screenSize")
-            .unwrap()
-            .unwrap_or(ScreenSize { x: 1, y: 1 });
-
         let prompt = self
             .get_using_prompt()
             .using_prompt
@@ -405,6 +402,8 @@ impl WallpaperEngine {
             .await
             .generate(prompt)
             .await?;
+
+        let screen_size = self.get_screen_size();
 
         let leonardo = self.get_leonardo();
 
@@ -525,5 +524,36 @@ impl WallpaperEngine {
         file.write_all(&file_data).await?;
 
         Ok(())
+    }
+
+    async fn optimize_image(&self, filename: &str) -> Result<(), ImageError> {
+        let prompt_id = self
+            .get_using_prompt()
+            .using_prompt
+            .lock()
+            .await
+            .get()
+            .unwrap()
+            .id;
+
+        let file_path = self
+            .app_handle
+            .path()
+            .resolve(
+                &format!("{}/{}", prompt_id, filename),
+                tauri::path::BaseDirectory::AppData,
+            )
+            .unwrap();
+
+        let screen_size = self.get_screen_size();
+
+        optimize_image(&file_path, &file_path, screen_size.x, screen_size.y)
+    }
+
+    fn get_screen_size(&self) -> ScreenSize {
+        self.user_store
+            .get::<ScreenSize>("screenSize")
+            .unwrap()
+            .unwrap_or(ScreenSize { x: 1, y: 1 })
     }
 }
