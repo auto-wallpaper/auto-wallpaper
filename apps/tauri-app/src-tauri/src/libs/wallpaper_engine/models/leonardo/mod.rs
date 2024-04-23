@@ -61,7 +61,7 @@ pub struct Leonardo {
 impl Leonardo {
     pub fn new() -> Result<Self, Error> {
         Ok(Self {
-            client: Client::builder().cookie_store(true).build()?,
+            client: Client::builder().cookie_store(true).timeout(std::time::Duration::from_secs(30)).build()?,
             user_id: None,
         })
     }

@@ -19,7 +19,7 @@ pub struct Upscale {
 
 impl Upscale {
     pub async fn new() -> Result<Self, reqwest::Error> {
-        let client = Client::builder().build()?;
+            let client = Client::builder().timeout(std::time::Duration::from_secs(30)).build()?;
 
         let response = client
             .get("https://www.iloveimg.com/upscale-image")
@@ -57,6 +57,7 @@ impl Upscale {
             client: Client::builder()
                 .cookie_provider(cookie_store.into())
                 .default_headers(headers)
+                .timeout(std::time::Duration::from_secs(30))
                 .build()?,
             task: task.to_string(),
             server_filename: None,
