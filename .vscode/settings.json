@@ -3,5 +3,9 @@
     {
       "mode": "auto"
     }
+  ],
+  "rust-analyzer.linkedProjects": [
+    "./apps/tauri-app/src-tauri/Cargo.toml",
+    "./Cargo.toml"
   ]
 }

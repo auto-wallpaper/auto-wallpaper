@@ -26,7 +26,7 @@ use self::{
     managers::status::WallpaperEngineStatus,
     models::{
         leonardo::{GetAIGenerationFeedGenerationStatus, Leonardo},
-        mailbox::mail_tm::MailTm as Mailbox,
+        mailbox::one_secmail::OneSecmail as Mailbox,
         upscale::Upscale,
     },
     structs::{Prompt, ScreenSize, WallpaperEngineError},
