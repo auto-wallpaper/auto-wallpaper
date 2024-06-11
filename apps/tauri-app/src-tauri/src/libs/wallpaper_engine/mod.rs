@@ -254,6 +254,8 @@ impl WallpaperEngine {
             )
             .unwrap();
 
+        let _ = self.get_leonardo().delete_account().await;
+
         match result {
             Some(result) => match result {
                 Ok(r) => {
