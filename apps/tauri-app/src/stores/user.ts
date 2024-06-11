@@ -52,16 +52,34 @@ export const UserStore = makeStore(".user.dat", {
           return e
         }
       }),
+      generatedAt: z.coerce.date().nullish(), 
       createdAt: z.coerce.date().default(() => new Date()),
     })
       .array(),
     defaultValue: defaultPrompts
   }),
   selectedPrompt: makeField({
-    schema: z.string().uuid(),
-    defaultValue: defaultPrompts[0]!.id,
+    schema: z.object({
+      id: z.string().uuid(),
+      type: z.enum(["prompt", "album"])
+    }),
+    defaultValue: {
+      id: defaultPrompts[0]!.id,
+      type: "prompt"
+    },
     async onChange() {
       await refreshWallpaper()
+    },
+    version: "1",
+    up(prev, defaultValue){
+      if(typeof prev === "string") {
+        return {
+          id: prev,
+          type: "prompt"
+        } as const
+      }
+
+      return defaultValue
     }
   }),
   interval: makeField({

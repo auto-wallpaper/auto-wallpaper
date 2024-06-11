@@ -37,25 +37,36 @@ const DeleteAction: React.FC = () => {
           onClick={async (e) => {
             e.stopPropagation();
 
-            const selectedPromptId = await UserStore.selectedPrompt.get();
+            const selectedPrompt = await UserStore.selectedPrompt.get();
 
             const { usingPrompt, status, cancel } =
               useWallpaperEngineStore.getState();
 
-            if ((status !== "IDLE" && status !== "CANCELING") && usingPrompt?.id === id) {
+            if (
+              status !== "IDLE" &&
+              status !== "CANCELING" &&
+              usingPrompt?.id === id
+            ) {
               void cancel();
             }
 
             void UserStore.prompts.set((prev) => {
-              if (selectedPromptId === id) {
+              if (
+                selectedPrompt.type === "prompt" &&
+                selectedPrompt.id === id
+              ) {
                 const sorted = [...prev].sort((a, b) =>
                   sortByDate(a.createdAt, b.createdAt),
                 );
                 const index = sorted.findIndex((prompt) => prompt.id === id);
-                const newSelectedPrompt = sorted[index + 1] ?? sorted[index - 1];
+                const newSelectedPrompt =
+                  sorted[index + 1] ?? sorted[index - 1];
 
                 if (newSelectedPrompt) {
-                  void UserStore.selectedPrompt.set(newSelectedPrompt?.id);
+                  void UserStore.selectedPrompt.set({
+                    id: newSelectedPrompt.id,
+                    type: "prompt",
+                  });
                 }
               }
 

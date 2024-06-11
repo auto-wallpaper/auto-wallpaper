@@ -10,6 +10,10 @@ pub struct StoreManager {
 }
 
 impl StoreManager {
+    pub fn make_albums_store(app_handle: &tauri::AppHandle) -> Self {
+        StoreManager::new(app_handle, ".albums.dat")
+    }
+
     pub fn make_user_store(app_handle: &tauri::AppHandle) -> Self {
         StoreManager::new(app_handle, ".user.dat")
     }

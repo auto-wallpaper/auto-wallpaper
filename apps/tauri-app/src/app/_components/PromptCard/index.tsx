@@ -1,9 +1,25 @@
 "use client";
 
 import type { ImageProps } from "next/image";
+import type { Dispatch, PointerEvent, SetStateAction } from "react";
 import type { IconType } from "react-icons/lib";
-import React, { createContext, forwardRef, useContext } from "react";
+import React, {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import Image from "next/image";
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { MdOutlineImageNotSupported } from "react-icons/md";
 
 import type { ClassValue } from "@acme/ui";
@@ -16,7 +32,6 @@ import {
   TooltipTrigger,
 } from "@acme/ui/tooltip";
 
-// import { VARIABLE_REGEX } from "~/lib/PromptEngine";
 export const VARIABLE_REGEX = /\$([\w_]+)/g;
 
 export type PromptCardData = {
@@ -36,6 +51,50 @@ const Box: React.FC<React.PropsWithChildren> = ({ children }) => {
     <div
       className="w-max rounded-md bg-zinc-900/75"
       onClick={(e) => e.stopPropagation()}
+    >
+      {children}
+    </div>
+  );
+};
+
+type DraggableCardProps = React.PropsWithChildren<{
+  id: string;
+  onMoving?: (isMoved: boolean) => void;
+}>;
+
+export const DraggableCard: React.FC<DraggableCardProps> = ({
+  id,
+  children,
+  onMoving: onDragChange,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const isMoved = useMemo(
+    () => transform !== null && (transform.x !== 0 || transform.y !== 0),
+    [transform],
+  );
+
+  useEffect(() => {
+    onDragChange?.(isMoved);
+  }, [isMoved, onDragChange]);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 1 : undefined,
+      }}
+      {...attributes}
+      {...listeners}
     >
       {children}
     </div>
@@ -83,7 +142,7 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
             )}
           </span>
 
-          <div className="absolute right-0 top-0 z-50 flex w-full cursor-default justify-end gap-1 p-2">
+          <div className="absolute right-0 top-0 z-50 m-2 flex w-max cursor-default justify-end gap-1">
             <Box>{actions}</Box>
           </div>
 
@@ -113,13 +172,73 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
 
 PromptCard.displayName = "PromptCard";
 
-export const PromptsGrid: React.FC<React.PropsWithChildren> = ({
+type PromptsGridProps = React.PropsWithChildren<
+  | {
+      orders: string[];
+      setOrders: Dispatch<SetStateAction<string[]>>;
+      sortable?: true;
+    }
+  | { sortable: false }
+>;
+
+const handler = (e: PointerEvent) => {
+  let cur = e.nativeEvent.target as HTMLElement | null;
+
+  while (cur) {
+    if (cur.dataset?.noDnd) {
+      return false;
+    }
+    cur = cur.parentElement;
+  }
+
+  return true;
+};
+
+class LibPointerSensor extends PointerSensor {
+  static activators = [{ eventName: "onPointerDown", handler } as const];
+}
+
+export const PromptsGrid: React.FC<PromptsGridProps> = ({
   children,
+  ...props
 }) => {
+  const sensors = useSensors(
+    useSensor(LibPointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+
   return (
-    <div className="grid h-max grid-cols-2 gap-2 lg:grid-cols-3 lg:gap-5">
-      {children}
-    </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={
+        props.sortable !== false
+          ? (event) => {
+              const { active, over } = event;
+
+              if (over && active.id !== over.id) {
+                props.setOrders((items) => {
+                  const oldIndex = items.indexOf(active.id.toString());
+                  const newIndex = items.indexOf(over.id.toString());
+
+                  return arrayMove(items, oldIndex, newIndex);
+                });
+              }
+            }
+          : undefined
+      }
+    >
+      <div className="grid h-max grid-cols-2 gap-2 lg:grid-cols-3 lg:gap-5">
+        {props.sortable !== false ? (
+          <SortableContext items={props.orders}>{children}</SortableContext>
+        ) : (
+          children
+        )}
+      </div>
+    </DndContext>
   );
 };
 

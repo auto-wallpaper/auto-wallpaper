@@ -1,30 +1,19 @@
-import type { IconType } from "react-icons/lib";
 import React from "react";
 import { downloadDir, join } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { IoStopOutline } from "react-icons/io5";
 import { LuDownload, LuRefreshCcw } from "react-icons/lu";
-
-import { cn } from "@acme/ui";
 
 import { ActionButton, usePromptContext } from "~/app/_components/PromptCard";
 import Spinner from "~/app/_components/Spinner";
+import SpinningStopIcon from "~/app/_components/SpinningStopIcon";
 import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
 import { UserStore } from "~/stores/user";
+import { createFilename } from "~/utils/string";
 import { getWallpaperPathOf } from "~/utils/wallpapers";
+import AlbumAction from "./components/AlbumAction";
 import DeleteAction from "./components/DeleteAction";
 import EditAction from "./components/EditAction";
-import { createFilename } from "~/utils/string";
-
-const SpinningStopIcon: IconType = (props) => {
-  return (
-    <IoStopOutline
-      {...props}
-      className={cn("animate-spinning-stroke", props.className)}
-    />
-  );
-};
 
 type ActionsProps = {
   hasImage: boolean;
@@ -42,6 +31,7 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
 
   return (
     <>
+      <AlbumAction />
       {isThisGenerating && (
         <ActionButton
           Icon={status === "CANCELING" ? Spinner : SpinningStopIcon}
@@ -72,7 +62,10 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
                 },
               ],
               title: "Save the wallpaper",
-              defaultPath: await join(await downloadDir(), createFilename(prompt)),
+              defaultPath: await join(
+                await downloadDir(),
+                createFilename(prompt),
+              ),
             });
 
             if (!destinationPath) return;

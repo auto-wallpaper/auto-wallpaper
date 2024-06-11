@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useHash } from "@mantine/hooks";
 
-import { PromptCard } from "~/app/_components/PromptCard";
+import { DraggableCard, PromptCard } from "~/app/_components/PromptCard";
 import { useWallpaperSource } from "~/lib/WallpaperFile";
 import { UserStore } from "~/stores/user";
 import Actions from "./components/Actions";
@@ -15,7 +15,7 @@ type PromptCardProps = {
 const UserPromptCard: React.FC<PromptCardProps> = ({
   data: { id, prompt },
 }) => {
-  const selectedPromptId = UserStore.selectedPrompt.useValue();
+  const selectedPrompt = UserStore.selectedPrompt.useValue();
   const { source } = useWallpaperSource(id);
   const [hash] = useHash();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -27,17 +27,22 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
   }, [hash, id, cardRef]);
 
   return (
-    <PromptCard
-      ref={cardRef}
-      id={id}
-      prompt={prompt}
-      imageSrc={source}
-      className={{
-        root: selectedPromptId === id && "border-zinc-200",
-      }}
-      actions={<Actions hasImage={!!source} />}
-      onSelect={() => UserStore.selectedPrompt.set(id)}
-    />
+    <DraggableCard id={id}>
+      <PromptCard
+        ref={cardRef}
+        id={id}
+        prompt={prompt}
+        imageSrc={source}
+        className={{
+          root: selectedPrompt?.type === "prompt" && selectedPrompt.id === id && "border-zinc-200",
+        }}
+        actions={<Actions hasImage={!!source} />}
+        onSelect={() => UserStore.selectedPrompt.set({
+          id,
+          type: "prompt"
+        })}
+      />
+    </DraggableCard>
   );
 };
 

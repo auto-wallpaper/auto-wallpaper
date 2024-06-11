@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getVersion } from "@tauri-apps/api/app";
 import { fetch } from "@tauri-apps/plugin-http";
-import { compare } from "compare-versions";
 import { error } from "@tauri-apps/plugin-log";
+import { compare } from "compare-versions";
 
 import { PromptsGrid } from "~/app/_components/PromptCard";
 import Card from "./components/Card";
@@ -84,7 +84,7 @@ const Prompts: React.FC = () => {
   }
 
   return (
-    <PromptsGrid>
+    <PromptsGrid sortable={false}>
       {prompts.map(({ id, prompt }) => (
         <Card key={id} id={id} prompt={prompt} />
       ))}
