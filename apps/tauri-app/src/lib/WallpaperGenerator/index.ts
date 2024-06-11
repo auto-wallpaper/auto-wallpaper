@@ -6,12 +6,19 @@ import { create } from "zustand";
 
 import { UserStore } from "~/stores/user";
 import { useWallpaperSourceStore } from "../WallpaperFile";
+import { AlbumsStore } from "~/stores/albums";
+import type { z } from "zod";
+
+const UsingPromptSchema = UserStore.prompts.schema.element.extend({
+  albumId: AlbumsStore.albums.schema.element.shape.id.nullish()
+})
 
 type WallpaperEngineState = {
   status: WallpaperEngineStatus;
-  usingPrompt: (typeof UserStore.prompts.$inferOutput)[number] | null;
+  usingPrompt: z.output<typeof UsingPromptSchema> | null;
   generateSelectedPrompt: () => Promise<void>;
   generateByPromptId: (promptId: string) => Promise<void>;
+  generateByAlbumId: (promptId: string) => Promise<void>;
   cancel: () => Promise<void>;
 };
 
@@ -29,11 +36,11 @@ export type WallpaperEngineStatus = keyof typeof WallpaperEngineStatus;
 export const useWallpaperEngineStore = create<WallpaperEngineState>(
   (set) => {
     const initUsingPrompt = async () => {
-      const prompt: (typeof UserStore.prompts.$inferOutput)[number] | null =
+      const prompt: z.input<typeof UsingPromptSchema> | null =
         await invoke("get_using_prompt");
 
       const usingPrompt =
-        prompt && (await UserStore.prompts.schema.element.parseAsync(prompt));
+        prompt && (await UsingPromptSchema.parseAsync(prompt));
 
       set({
         usingPrompt,
@@ -55,11 +62,11 @@ export const useWallpaperEngineStore = create<WallpaperEngineState>(
     void initStatus();
 
     void listen<{
-      usingPrompt: (typeof UserStore.prompts.$inferInput)[number];
+      usingPrompt: z.input<typeof UsingPromptSchema>;
     }>(
       "wallpaper-engine-finish",
       async ({ payload }) => {
-        const usingPrompt = await UserStore.prompts.schema.element.parseAsync(payload.usingPrompt);
+        const usingPrompt = await UsingPromptSchema.parseAsync(payload.usingPrompt);
 
         await useWallpaperSourceStore.getState().refresh(usingPrompt.id)
       },
@@ -75,14 +82,14 @@ export const useWallpaperEngineStore = create<WallpaperEngineState>(
     );
 
     void listen<{
-      usingPrompt: (typeof UserStore.prompts.$inferInput)[number] | null;
+      usingPrompt: z.input<typeof UsingPromptSchema> | null;
     }>("wallpaper-engine-using-prompt-change", async ({ payload }) => {
       const { usingPrompt } = payload;
 
       set({
         usingPrompt:
           usingPrompt &&
-          (await UserStore.prompts.schema.element.parseAsync(usingPrompt)),
+          (await UsingPromptSchema.parseAsync(usingPrompt)),
       });
     });
 
@@ -99,6 +106,11 @@ export const useWallpaperEngineStore = create<WallpaperEngineState>(
       generateByPromptId: async (promptId: string) => {
         await invoke("generate_by_prompt_id", {
           promptId,
+        })
+      },
+      generateByAlbumId: async (albumId: string) => {
+        await invoke("generate_by_album_id", {
+          albumId,
         })
       },
     };

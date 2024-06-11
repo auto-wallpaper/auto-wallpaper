@@ -31,6 +31,7 @@ const Action: React.FC<ActionProps> = ({
       <DialogContent
         className={cn("max-w-[35rem]", className?.content)}
         onOpenAutoFocus={(e) => e.preventDefault()}
+        data-no-dnd
       >
         {children}
       </DialogContent>

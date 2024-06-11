@@ -1,7 +1,10 @@
 use serde::Serialize;
 use tauri::Manager;
 
-use crate::libs::{store::StoreManager, wallpaper_engine::structs::Prompt};
+use crate::libs::{
+    store::StoreManager,
+    wallpaper_engine::structs::{Prompt, UsingPrompt},
+};
 
 #[derive(Debug)]
 pub enum WallpaperEngineUsingPromptError {
@@ -25,12 +28,12 @@ impl From<tauri::Error> for WallpaperEngineUsingPromptError {
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct UsingPromptChangeEventPayload {
-    using_prompt: Option<Prompt>,
+    using_prompt: Option<UsingPrompt>,
 }
 
 pub struct WallpaperEngineUsingPromptManager {
     app_handle: tauri::AppHandle,
-    using_prompt: Option<Prompt>,
+    using_prompt: Option<UsingPrompt>,
     user_store: StoreManager,
 }
 
@@ -43,21 +46,33 @@ impl WallpaperEngineUsingPromptManager {
         }
     }
 
-    pub fn set(&mut self, prompt_id: &str) -> Result<Prompt, WallpaperEngineUsingPromptError> {
+    pub fn set(
+        &mut self,
+        prompt_id: &str,
+        album_id: Option<String>,
+    ) -> Result<UsingPrompt, WallpaperEngineUsingPromptError> {
         let prompts = self.user_store.get::<Vec<Prompt>>("prompts")?.unwrap();
 
         for prompt in prompts {
             if prompt.id == prompt_id {
-                self.using_prompt = Some(prompt.clone());
+                let using_prompt = UsingPrompt {
+                    id: prompt.id,
+                    prompt: prompt.prompt,
+                    album_id,
+                    generated_at: prompt.generated_at,
+                    created_at: prompt.created_at,
+                };
+
+                self.using_prompt = Some(using_prompt.clone());
 
                 self.app_handle.emit(
                     "wallpaper-engine-using-prompt-change",
                     UsingPromptChangeEventPayload {
-                        using_prompt: Some(prompt.clone()),
+                        using_prompt: Some(using_prompt.clone()),
                     },
                 )?;
 
-                return Ok(prompt);
+                return Ok(using_prompt);
             }
         }
 
@@ -75,7 +90,7 @@ impl WallpaperEngineUsingPromptManager {
         Ok(())
     }
 
-    pub fn get(&self) -> Option<Prompt> {
+    pub fn get(&self) -> Option<UsingPrompt> {
         self.using_prompt.clone()
     }
 }

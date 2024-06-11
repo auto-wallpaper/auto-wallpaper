@@ -13,6 +13,8 @@
     "store:allow-save",
     "store:allow-load",
     "store:allow-set",
+    "store:allow-keys",
+    "store:allow-delete",
     "window:allow-toggle-maximize",
     "window:allow-hide",
     "window:allow-is-maximized",

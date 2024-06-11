@@ -1,29 +1,38 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 
 import { UserStore } from "~/stores/user";
-import { sortByDate } from "~/utils/sort";
 import { PromptsGrid } from "../PromptCard";
 import NewPrompt from "./components/NewPrompt";
 import UserPromptCard from "./components/PromptCard";
 
 const UserPrompts: React.FC = () => {
   const prompts = UserStore.prompts.useValue();
+  const [orders, setOrders] = useState<string[]>([]);
 
-  const sortedPrompts = useMemo(
-    () =>
-      prompts
-        ? [...prompts].sort((a, b) => sortByDate(a.createdAt, b.createdAt))
-        : [],
-    [prompts],
-  );
+  useEffect(() => {
+    setOrders((prev) => {
+      const newOrders = prompts?.map((prompt) => prompt.id) ?? [];
+      return prev.toString() === newOrders.toString() ? prev : newOrders;
+    });
+  }, [prompts]);
+
+  useLayoutEffect(() => {
+    void UserStore.prompts.set((prev) =>
+      [...prev].sort((a, b) => orders.indexOf(a.id) - orders.indexOf(b.id)),
+    );
+  }, [orders]);
 
   return (
-    <PromptsGrid>
-      {sortedPrompts.map((data) => (
-        <UserPromptCard key={data.id} data={data} />
-      ))}
+    <PromptsGrid orders={orders} setOrders={setOrders}>
+      {orders.map((promptId) => {
+        const prompt = prompts?.find((prompt) => prompt.id === promptId);
+
+        if (!prompt) return null;
+
+        return <UserPromptCard key={prompt.id} data={prompt} />;
+      })}
 
       <NewPrompt />
     </PromptsGrid>

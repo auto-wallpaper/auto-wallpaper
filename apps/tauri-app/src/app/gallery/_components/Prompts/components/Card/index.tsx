@@ -51,7 +51,10 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
                 });
               }
 
-              await UserStore.selectedPrompt.set(last.id);
+              await UserStore.selectedPrompt.set({
+                id: last.id,
+                type: "prompt",
+              });
 
               setIsAdding(false);
 

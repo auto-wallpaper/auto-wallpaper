@@ -1,14 +1,18 @@
 import type { z } from "zod";
 import { Store } from "@tauri-apps/plugin-store";
 import { useEffect, useState } from "react";
+import type { RequireAllOrNone } from "type-fest"
 
 type Value<TValue, TDefaultValue> = TDefaultValue extends NonNullable<unknown> ? TValue : TValue | null
 
 type FieldOptions<TSchema extends z.Schema<unknown>, TDefaultValue extends z.input<TSchema>> = {
   schema: TSchema;
   defaultValue?: TDefaultValue;
-  onChange?: (value: Value<z.output<TSchema>, TDefaultValue>) => void
-};
+  onChange?: (value: Value<z.output<TSchema>, TDefaultValue>) => void;
+} & RequireAllOrNone<{
+  version: string;
+  up: (prev: unknown, defaultValue: Value<z.output<TSchema>, TDefaultValue>) => z.input<TSchema>
+}, "up" | "version">;
 
 type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
   $inferInput: z.input<TSchema>;
@@ -22,18 +26,35 @@ type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
 }
 
 export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue extends z.input<TSchema>>(
-  { schema, defaultValue, onChange }: FieldOptions<TSchema, TDefaultValue>,
+  { schema, defaultValue, onChange, ...other }: FieldOptions<TSchema, TDefaultValue>,
 ) => {
   return ({ key, store }: { key: string, store: Store }): Field<TSchema, TDefaultValue> => {
     const initialization = (async () => {
       if (onChange)
         await store.onKeyChange<z.output<TSchema>>(key, onChange)
 
-      if (!await store.has(key) && typeof defaultValue !== "undefined") {
+      const doesKeyExist = await store.has(key)
+
+      if (!doesKeyExist && typeof defaultValue !== "undefined") {
         const parsedValue = schema ? await schema.parseAsync(defaultValue) : defaultValue;
         await store.set(key, parsedValue);
-        await store.save()
       }
+
+      if (doesKeyExist) {
+        const currentVersion = await store.get<string>(`${key}.version`)
+
+        if (other.version && currentVersion !== other.version) {
+          const updatedValue = other.up(await store.get(key), defaultValue)
+
+          await store.set(key, await schema.parseAsync(updatedValue))
+        }
+      }
+
+      if (other.version) {
+        await store.set(`${key}.version`, other.version)
+      }
+
+      await store.save()
     })();
 
     const field: Field<TSchema, TDefaultValue> = {
@@ -101,6 +122,23 @@ export const makeStore = <
   items: TFields,
 ): { [key in keyof TFields]: ReturnType<TFields[key]> } => {
   const store = new Store(storePath);
+
+  const initialization = async () => {
+    const keys = (await store.keys())
+    const fields = Object.keys(items)
+
+    const extraKeys = keys.filter((key) => {
+      const name = key.split(".")[0]!
+
+      return !fields.includes(name)
+    })
+
+    await Promise.all(extraKeys.map(key => store.delete(key)))
+
+    await store.save()
+  }
+
+  void initialization()
 
   return Object.fromEntries(
     Object.entries(items).map(([key, make]) => {

@@ -14,7 +14,33 @@ use super::{
 pub struct Prompt {
     pub id: String,
     pub prompt: String,
+    pub generated_at: Option<String>,
     pub created_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct UsingPrompt {
+    pub id: String,
+    pub prompt: String,
+    pub album_id: Option<String>,
+    pub generated_at: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum AlbumSelectionType {
+    Sequential,
+    Random,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Album {
+    pub id: String,
+    pub prompts: Vec<String>,
+    pub selection_type: AlbumSelectionType,
 }
 
 #[derive(Debug, Deserialize)]

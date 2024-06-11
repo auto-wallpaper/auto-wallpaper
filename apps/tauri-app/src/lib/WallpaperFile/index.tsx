@@ -42,21 +42,25 @@ export const useWallpaperSourceStore = create<WallpaperSourceState>(
   }),
 );
 
-export const useWallpaperSource = (promptId: string) => {
+export const useWallpaperSource = (promptId?: string) => {
   const refresh = useWallpaperSourceStore((state) => state.refresh);
   const exists = useWallpaperSourceStore((state) => state.exists);
   const source = useWallpaperSourceStore(
-    (state) => state.sources[promptId] ?? null,
+    (state) => (promptId && state.sources[promptId]) ?? null,
   );
 
   useEffect(() => {
-    if (!exists(promptId)) {
+    if (promptId && !exists(promptId)) {
       void refresh(promptId);
     }
   }, [promptId, refresh, exists]);
 
   return {
     source,
-    refresh: useMemo(() => refresh.bind(null, promptId), [promptId, refresh]),
+    refresh: useMemo(
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      () => (promptId ? refresh.bind(null, promptId) : () => {}),
+      [promptId, refresh],
+    ),
   };
 };

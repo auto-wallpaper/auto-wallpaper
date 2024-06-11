@@ -317,6 +317,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::wallpaper_engine::generate_selected_prompt,
             commands::wallpaper_engine::generate_by_prompt_id,
+            commands::wallpaper_engine::generate_by_album_id,
             commands::wallpaper_engine::get_using_prompt,
             commands::wallpaper_engine::get_status,
             commands::wallpaper_engine::cancel,
