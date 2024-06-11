@@ -61,9 +61,16 @@ pub struct Leonardo {
 impl Leonardo {
     pub fn new() -> Result<Self, Error> {
         Ok(Self {
-            client: Client::builder().cookie_store(true).timeout(std::time::Duration::from_secs(30)).build()?,
+            client: Leonardo::build_http_client()?,
             user_id: None,
         })
+    }
+
+    fn build_http_client() -> reqwest::Result<Client> {
+        Client::builder()
+            .cookie_store(true)
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
     }
 
     pub async fn signup(&mut self, email: String, password: &str) -> Result<SignupResponse, Error> {
@@ -98,7 +105,7 @@ impl Leonardo {
         Ok(())
     }
 
-    pub async fn login(&mut self, username: String, password: &str) -> Result<(), Error> {
+    async fn get_csrf(&self) -> Result<String, Error> {
         #[derive(Debug, Deserialize)]
         #[serde(deny_unknown_fields, rename_all = "camelCase")]
         struct CsrfResponse {
@@ -113,13 +120,19 @@ impl Leonardo {
             .json::<CsrfResponse>()
             .await?;
 
+        Ok(csrf_response.csrf_token)
+    }
+
+    pub async fn login(&mut self, username: String, password: &str) -> Result<(), Error> {
+        let csrf_token = self.get_csrf().await?;
+
         self.client
             .post("https://app.leonardo.ai/api/auth/callback/credentials")
             .json(&serde_json::json!({
                 "username": username,
                 "password": password,
                 "redirect": false,
-                "csrfToken": csrf_response.csrf_token,
+                "csrfToken": csrf_token,
                 "callbackUrl": "https://app.leonardo.ai/api/auth/session".to_string(),
                 "json":true
             }))
@@ -414,5 +427,37 @@ impl Leonardo {
             .await?;
 
         Ok(result)
+    }
+
+    pub async fn delete_account(&mut self) -> Result<(), GraphqlRequestError> {
+        if self.user_id.is_none() {
+            return Ok(());
+        }
+
+        let query = "
+            mutation DeleteAccount {
+                deleteAccount {
+                    status
+                    __typename
+                }
+            }
+        ";
+
+        let access_token = self.get_session().await?;
+
+        self.client
+            .post("https://api.leonardo.ai/v1/graphql")
+            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
+            .json(&json!({
+                "query": query,
+                "operationName": "DeleteAccount"
+            }))
+            .send()
+            .await?;
+
+        self.user_id = None;
+        self.client = Leonardo::build_http_client()?;
+
+        Ok(())
     }
 }
