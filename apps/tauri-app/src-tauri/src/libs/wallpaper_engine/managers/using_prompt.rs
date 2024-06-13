@@ -58,6 +58,7 @@ impl WallpaperEngineUsingPromptManager {
                 let using_prompt = UsingPrompt {
                     id: prompt.id,
                     prompt: prompt.prompt,
+                    upscale: prompt.upscale,
                     album_id,
                     generated_at: prompt.generated_at,
                     created_at: prompt.created_at,

@@ -19,6 +19,7 @@ pub struct GetAIGenerationFeedGeneratedImage {
 #[derive(Debug, Deserialize)]
 pub enum GetAIGenerationFeedGenerationStatus {
     COMPLETE,
+    PENDING,
     FAILED,
 }
 
@@ -32,6 +33,13 @@ pub struct GetAIGenerationFeedGeneration {
 #[serde(deny_unknown_fields)]
 pub struct GetAIGenerationFeedResponse {
     pub generations: Vec<GetAIGenerationFeedGeneration>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GetImageVariationData {
+    pub url: Option<String>,
+    pub status: GetAIGenerationFeedGenerationStatus,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -459,5 +467,82 @@ impl Leonardo {
         self.client = Leonardo::build_http_client()?;
 
         Ok(())
+    }
+
+    pub async fn create_universal_upscaler_job(
+        &mut self,
+        generated_image_id: String,
+        creativity_strength: u8,
+        style: String,
+    ) -> Result<String, GraphqlRequestError> {
+        #[derive(Debug, Deserialize)]
+        #[serde(deny_unknown_fields, rename_all = "camelCase")]
+        struct UniversalUpscalerJobData {
+            generation_id: String,
+        }
+
+        #[derive(Debug, Deserialize)]
+        #[serde(deny_unknown_fields, rename_all = "camelCase")]
+        struct CreateUniversalUpscalerJobResponse {
+            universal_upscaler: UniversalUpscalerJobData,
+        }
+
+        let query = "
+            mutation CreateUniversalUpscalerJob($arg1: UniversalUpscalerInput!) {
+                universalUpscaler(arg1: $arg1) {
+                    generationId
+                }
+            }
+        ";
+
+        let result = self
+            .graphql::<CreateUniversalUpscalerJobResponse, serde_json::Value>(
+                "CreateUniversalUpscalerJob",
+                query,
+                Some(json!({
+                  "arg1": {
+                    "creativityStrength": creativity_strength,
+                    "generatedImageId": generated_image_id,
+                    "prompt": "",
+                    "upscaleMultiplier":1,
+                    "upscalerStyle": style,
+                  },
+                })),
+            )
+            .await?;
+
+        Ok(result.universal_upscaler.generation_id)
+    }
+
+    pub async fn get_image_variation_by_fk(
+        &mut self,
+        id: String,
+    ) -> Result<GetImageVariationData, GraphqlRequestError> {
+        #[derive(Debug, Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct GetImageVariationResponse {
+            generated_image_variation_generic_by_pk: GetImageVariationData,
+        }
+
+        let query = "
+            query GetImageVariationByFk($id: uuid!) {
+                generated_image_variation_generic_by_pk(id: $id) {
+                    status
+                    url   
+                }
+            }
+        ";
+
+        let result = self
+            .graphql::<GetImageVariationResponse, serde_json::Value>(
+                "GetImageVariationByFk",
+                query,
+                Some(json!({
+                  "id": id,
+                })),
+            )
+            .await?;
+
+        Ok(result.generated_image_variation_generic_by_pk)
     }
 }

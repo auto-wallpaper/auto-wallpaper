@@ -4,7 +4,7 @@ pub mod structs;
 
 use rand::seq::SliceRandom;
 use std::{cmp::Ordering, io, time::Duration};
-use structs::{Album, AlbumSelectionType, Prompt, UsingPrompt};
+use structs::{AIGenerationData, Album, AlbumSelectionType, Prompt, PromptUpscale, UsingPrompt};
 
 use chrono::{DateTime, Utc};
 use log::error;
@@ -29,7 +29,6 @@ use self::{
     models::{
         leonardo::{GetAIGenerationFeedGenerationStatus, Leonardo},
         mailbox::one_secmail::OneSecmail as Mailbox,
-        upscale::Upscale,
     },
     structs::{ScreenSize, WallpaperEngineError},
 };
@@ -41,7 +40,6 @@ const PASSWORD: &str = "abc123ABC!@#";
 pub struct WallpaperEngine {
     leonardo: Option<Leonardo>,
     mailbox: Option<Mailbox>,
-    upscale: Option<Upscale>,
     temp_store: StoreManager,
     user_store: StoreManager,
     albums_store: StoreManager,
@@ -54,7 +52,6 @@ impl WallpaperEngine {
         Self {
             leonardo: None,
             mailbox: None,
-            upscale: None,
             temp_store: StoreManager::make_temp_store(app_handle),
             user_store: StoreManager::make_user_store(app_handle),
             albums_store: StoreManager::make_albums_store(app_handle),
@@ -69,10 +66,6 @@ impl WallpaperEngine {
 
     fn get_mailbox(&mut self) -> &mut Mailbox {
         self.mailbox.as_mut().unwrap()
-    }
-
-    fn get_upscale(&mut self) -> &mut Upscale {
-        self.upscale.as_mut().unwrap()
     }
 
     pub async fn generate_selected_prompt(&mut self) -> Result<UsingPrompt, WallpaperEngineError> {
@@ -314,7 +307,8 @@ impl WallpaperEngine {
             .await
             .set(WallpaperEngineStatus::Initializing)?;
 
-        self.get_using_prompt()
+        let using_prompt = self
+            .get_using_prompt()
             .using_prompt
             .lock()
             .await
@@ -322,7 +316,6 @@ impl WallpaperEngine {
 
         self.mailbox = Some(Mailbox::new()?);
         self.leonardo = Some(Leonardo::new()?);
-        self.upscale = Some(Upscale::new().await?);
 
         self.check_status().await?;
 
@@ -360,38 +353,36 @@ impl WallpaperEngine {
             .await
             .set(WallpaperEngineStatus::GeneratingImage)?;
 
-        let generated_image_url = self.get_ai_generation_job(generation_id).await?;
+        let generated_image = self.get_ai_generation_job(generation_id).await?;
 
         self.check_status().await?;
 
-        let file_response = reqwest::get(generated_image_url).await?;
+        let url = match using_prompt.upscale {
+            Some(upscale_settings) => {
+                self.get_status()
+                    .status
+                    .lock()
+                    .await
+                    .set(WallpaperEngineStatus::Upscaling)?;
+
+                self.upscale(generated_image.id, upscale_settings).await?
+            }
+            None => generated_image.url,
+        };
+
+        let file_response = reqwest::get(url).await?;
 
         self.check_status().await?;
 
-        let original_image = file_response.bytes().await?.to_vec();
+        let image_data = file_response.bytes().await?.to_vec();
 
         self.check_status().await?;
 
-        self.save_image_file(&original_image, "original.jpeg")
-            .await?;
+        self.save_image_file(&image_data, "image.jpeg").await?;
 
         self.check_status().await?;
 
-        self.optimize_image("original.jpeg").await?;
-
-        self.check_status().await?;
-
-        self.get_status()
-            .status
-            .lock()
-            .await
-            .set(WallpaperEngineStatus::Upscaling)?;
-
-        let upscale_image = self.upscale(original_image).await?;
-
-        self.check_status().await?;
-
-        self.save_image_file(&upscale_image, "upscale.jpeg").await?;
+        self.optimize_image("image.jpeg").await?;
 
         self.check_status().await?;
 
@@ -400,8 +391,6 @@ impl WallpaperEngine {
             .lock()
             .await
             .set(WallpaperEngineStatus::Finalizing)?;
-
-        self.optimize_image("upscale.jpeg").await?;
 
         self.check_status().await?;
 
@@ -560,7 +549,7 @@ impl WallpaperEngine {
     async fn get_ai_generation_job(
         &mut self,
         generation_id: String,
-    ) -> Result<String, WallpaperEngineError> {
+    ) -> Result<AIGenerationData, WallpaperEngineError> {
         // waiting for 1 minute
         for _ in 0..12 {
             self.check_status().await?;
@@ -590,33 +579,69 @@ impl WallpaperEngine {
                         None => continue,
                     };
 
-                    return Ok(generated_image.url.clone());
+                    return Ok(AIGenerationData {
+                        id: generated_image.id.clone(),
+                        url: generated_image.url.clone(),
+                    });
                 }
                 GetAIGenerationFeedGenerationStatus::FAILED => continue,
+                GetAIGenerationFeedGenerationStatus::PENDING => continue,
             }
         }
 
         return Err(WallpaperEngineError::AIGenerateTimeout);
     }
 
-    async fn upscale(&mut self, file_data: Vec<u8>) -> Result<Vec<u8>, WallpaperEngineError> {
-        self.get_upscale()
-            .upload(file_data, "my_image.jpeg")
+    async fn upscale(
+        &mut self,
+        generated_image_id: String,
+        upscale_settings: PromptUpscale,
+    ) -> Result<String, WallpaperEngineError> {
+        let leonardo = self.get_leonardo();
+
+        let generation_id = leonardo
+            .create_universal_upscaler_job(
+                generated_image_id,
+                upscale_settings.creativity_strength,
+                upscale_settings.style,
+            )
             .await?;
 
-        self.check_status().await?;
+        return self.get_image_variation_by_fk(generation_id).await;
+    }
 
-        self.get_upscale().upscale().await?;
+    async fn get_image_variation_by_fk(
+        &mut self,
+        generation_id: String,
+    ) -> Result<String, WallpaperEngineError> {
+        // waiting for 1 minute
+        for _ in 0..12 {
+            self.check_status().await?;
 
-        self.check_status().await?;
+            sleep(Duration::from_secs(5)).await;
 
-        self.get_upscale().process().await?;
+            self.check_status().await?;
 
-        self.check_status().await?;
+            let data = self
+                .get_leonardo()
+                .get_image_variation_by_fk(generation_id.clone())
+                .await?;
 
-        let upscale_image = self.get_upscale().download().await?;
+            match data.status {
+                GetAIGenerationFeedGenerationStatus::COMPLETE => {
+                    let url = match data.url {
+                        Some(v) => v,
+                        None => continue,
+                    };
 
-        Ok(upscale_image)
+                    return Ok(url.clone());
+                }
+                GetAIGenerationFeedGenerationStatus::FAILED => continue,
+                GetAIGenerationFeedGenerationStatus::PENDING => continue,
+            }
+        }
+
+        return Err(WallpaperEngineError::AIGenerateTimeout);
     }
 
     async fn save_image_file(
