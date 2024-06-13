@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 
@@ -25,7 +25,16 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@acme/ui/hover-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@acme/ui/select";
+import { Slider } from "@acme/ui/slider";
 import { Textarea } from "@acme/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@acme/ui/toggle-group";
 
 import { usePromptContext } from "~/app/_components/PromptCard";
 import { UserStore } from "~/stores/user";
@@ -33,25 +42,43 @@ import { generatePrompt } from "~/utils/commands";
 import Action from "../Action";
 
 const EditAction: React.FC = () => {
-  const { id, prompt } = usePromptContext();
+  const { id } = usePromptContext();
+  const { prompt, upscale } =
+    UserStore.prompts.useValue(
+      useCallback(
+        (prompts) => prompts.find((prompt) => prompt.id === id),
+        [id],
+      ),
+    ) ?? {};
+
   const [isOpen, setIsOpen] = useState(false);
   const [builtPrompt, setBuiltPrompt] = useState("");
 
   const form = useForm({
     schema: UserStore.prompts.schema.element.pick({
       prompt: true,
+      upscale: true,
     }),
     defaultValues: {
       prompt,
+      upscale,
     },
     mode: "all",
   });
 
+  const upscaleValue = form.watch("upscale");
   const { reset } = form;
 
   useEffect(() => {
     isOpen && reset();
   }, [reset, isOpen]);
+
+  useEffect(() => {
+    reset({
+      prompt,
+      upscale,
+    });
+  }, [prompt, reset, upscale]);
 
   const formValues = form.getValues();
 
@@ -91,7 +118,7 @@ const EditAction: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="flex flex-col gap-6 py-4">
             <FormField
               control={form.control}
               name="prompt"
@@ -140,6 +167,120 @@ const EditAction: React.FC = () => {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="upscale"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upscale</FormLabel>
+
+                  <FormControl>
+                    <ToggleGroup
+                      type="single"
+                      value={field.value ? "enable" : "disable"}
+                      className="w-full"
+                      onValueChange={(value) => {
+                        switch (value) {
+                          case "enable":
+                            form.setValue("upscale", {
+                              creativityStrength: 7,
+                              style: "General",
+                            });
+                            break;
+                          case "disable":
+                            form.setValue("upscale", null);
+                            break;
+                        }
+                      }}
+                    >
+                      <ToggleGroupItem
+                        className="flex-1"
+                        value="enable"
+                        aria-label="Enable"
+                      >
+                        Enable
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        className="flex-1"
+                        value="disable"
+                        aria-label="Disable"
+                      >
+                        Disable
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {upscaleValue && (
+              <div className="flex flex-col gap-6 rounded-md border border-zinc-800 px-6 py-4">
+                <FormField
+                  control={form.control}
+                  name="upscale.style"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Upscale Style</FormLabel>
+
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="ring-inset focus:ring-1 focus:ring-zinc-700 focus:ring-offset-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {UserStore.prompts.schema.element.shape.upscale
+                              .removeDefault()
+                              .unwrap()
+                              .shape.style.removeDefault()
+                              .options.map((item) => (
+                                <SelectItem key={item} value={item}>
+                                  {item}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="upscale.creativityStrength"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Creativity Strength</FormLabel>
+
+                      <FormControl>
+                        <div className="flex gap-4">
+                          <Slider
+                            min={1}
+                            max={10}
+                            {...field}
+                            value={[field.value!]}
+                            onValueChange={([value]) =>
+                              form.setValue("upscale.creativityStrength", value)
+                            }
+                          />
+                          <div className="flex aspect-square min-h-full w-10 items-center justify-center rounded-md border border-zinc-800 p-3 text-xs text-zinc-300">
+                            {field.value}
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </div>
 
           <DialogFooter>

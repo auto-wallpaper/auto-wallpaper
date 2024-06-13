@@ -11,10 +11,18 @@ use super::{
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct PromptUpscale {
+    pub creativity_strength: u8,
+    pub style: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Prompt {
     pub id: String,
     pub prompt: String,
     pub generated_at: Option<String>,
+    pub upscale: Option<PromptUpscale>,
     pub created_at: String,
 }
 
@@ -23,9 +31,15 @@ pub struct Prompt {
 pub struct UsingPrompt {
     pub id: String,
     pub prompt: String,
+    pub upscale: Option<PromptUpscale>,
     pub album_id: Option<String>,
     pub generated_at: Option<String>,
     pub created_at: String,
+}
+
+pub struct AIGenerationData {
+    pub url: String,
+    pub id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

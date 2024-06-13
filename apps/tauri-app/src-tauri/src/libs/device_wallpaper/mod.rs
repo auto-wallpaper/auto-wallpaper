@@ -43,17 +43,10 @@ impl DeviceWallpaper {
         let app_data_dir = self.app_handle.path().app_data_dir().unwrap();
         let prompt_dir = append_to_path(&app_data_dir, &format!("/{}", prompt_id));
 
-        let upscale_image_path = append_to_path(&prompt_dir, "/upscale.jpeg");
+        let image_path = append_to_path(&prompt_dir, "/image.jpeg");
 
-        if upscale_image_path.exists() {
-            return wallpaper::set_from_path(upscale_image_path.to_str().unwrap())
-                .or(Err(DeviceWallpaperError::WallpaperChangeError));
-        }
-
-        let original_image_path = append_to_path(&prompt_dir, "/original.jpeg");
-
-        if original_image_path.exists() {
-            return wallpaper::set_from_path(original_image_path.to_str().unwrap())
+        if image_path.exists() {
+            return wallpaper::set_from_path(image_path.to_str().unwrap())
                 .or(Err(DeviceWallpaperError::WallpaperChangeError));
         }
 

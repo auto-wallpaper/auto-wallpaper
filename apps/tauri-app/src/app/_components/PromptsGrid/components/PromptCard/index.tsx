@@ -34,13 +34,18 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
         prompt={prompt}
         imageSrc={source}
         className={{
-          root: selectedPrompt?.type === "prompt" && selectedPrompt.id === id && "border-zinc-200",
+          root:
+            selectedPrompt?.type === "prompt" &&
+            selectedPrompt.id === id &&
+            "border-zinc-200",
         }}
         actions={<Actions hasImage={!!source} />}
-        onSelect={() => UserStore.selectedPrompt.set({
-          id,
-          type: "prompt"
-        })}
+        onSelect={() =>
+          UserStore.selectedPrompt.set({
+            id,
+            type: "prompt",
+          })
+        }
       />
     </DraggableCard>
   );

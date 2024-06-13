@@ -52,7 +52,11 @@ export const UserStore = makeStore(".user.dat", {
           return e
         }
       }),
-      generatedAt: z.coerce.date().nullish(), 
+      upscale: z.object({
+        creativityStrength: z.number().min(1).max(10).default(7),
+        style: z.enum(["General", "2D Art & Illustration", "Cinematic", "CG Art & Game Assets"]).default("General")
+      }).nullable().default(null),
+      generatedAt: z.coerce.date().nullish(),
       createdAt: z.coerce.date().default(() => new Date()),
     })
       .array(),
@@ -71,8 +75,8 @@ export const UserStore = makeStore(".user.dat", {
       await refreshWallpaper()
     },
     version: "1",
-    up(prev, defaultValue){
-      if(typeof prev === "string") {
+    up(prev, defaultValue) {
+      if (typeof prev === "string") {
         return {
           id: prev,
           type: "prompt"

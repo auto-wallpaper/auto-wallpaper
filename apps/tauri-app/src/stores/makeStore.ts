@@ -22,7 +22,10 @@ type Field<TSchema extends z.Schema<unknown>, TDefaultValue> = {
   get: () => Promise<Value<z.output<TSchema>, TDefaultValue>>;
   validate: (value: z.input<TSchema>) => Promise<z.output<TSchema>>;
   onChange: (cb: (value: Value<z.output<TSchema>, TDefaultValue>) => void) => Promise<() => void>;
-  useValue: () => Value<z.output<TSchema>, TDefaultValue> | null;
+  useValue: {
+    (): Value<z.output<TSchema>, TDefaultValue> | null;
+    <T = Value<z.output<TSchema>, TDefaultValue>>(selector: (state: Value<z.output<TSchema>, TDefaultValue>) => T): T | null;
+  }
 }
 
 export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue extends z.input<TSchema>>(
@@ -85,17 +88,20 @@ export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue exten
       onChange: (cb) => {
         return store.onKeyChange(key, cb)
       },
-      useValue: () => {
-        const [value, setValue] = useState<Value<z.output<TSchema>, typeof defaultValue> | null>(null);
+      useValue: <T = Value<z.output<TSchema>, TDefaultValue>>(selector?: (state: Value<z.output<TSchema>, TDefaultValue>) => T) => {
+        const [value, setValue] = useState<T | null>(null);
 
         useEffect(() => {
           let unlisten: (() => void) | undefined;
 
           const handler = async () => {
-            setValue(await field.get());
+            const value = await field.get()
+            setValue(selector ? selector(value) : (value as T));
 
             unlisten = await store.onKeyChange<z.output<TSchema>>(key, async (value) => {
-              setValue(await schema.parseAsync(value));
+              const parsedValue = await schema.parseAsync(value);
+
+              setValue(selector ? selector(parsedValue) : (parsedValue as T));
             })
           };
 
@@ -104,7 +110,7 @@ export const makeField = <TSchema extends z.Schema<unknown>, TDefaultValue exten
           return () => {
             unlisten?.();
           };
-        }, []);
+        }, [selector]);
 
         return value
       }

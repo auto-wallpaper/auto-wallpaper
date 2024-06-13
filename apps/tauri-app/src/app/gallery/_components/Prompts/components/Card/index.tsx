@@ -46,8 +46,7 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
 
                 await saveWallpaperFiles({
                   promptId: last.id,
-                  originalImage: data,
-                  upscaleImage: data,
+                  image: data,
                 });
               }
 

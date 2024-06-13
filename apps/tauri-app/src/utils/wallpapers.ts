@@ -8,16 +8,10 @@ export const getWallpaperPathOf = async (promptId: string) => {
         return null
     }
 
-    const upscalePath = await join(promptDir, "upscale.jpeg")
+    const imagePath = await join(promptDir, "image.jpeg")
 
-    if (await exists(upscalePath)) {
-        return upscalePath
-    }
-
-    const originalPath = await join(promptDir, "original.jpeg")
-
-    if (await exists(originalPath)) {
-        return originalPath
+    if (await exists(imagePath)) {
+        return imagePath
     }
 
     return null
@@ -27,18 +21,14 @@ export const removeWallpaperFiles = async (promptId: string) => {
     await remove(promptId, { baseDir: BaseDirectory.AppData, recursive: true })
 }
 
-export const saveWallpaperFiles = async ({ upscaleImage, originalImage, promptId }: { upscaleImage: Uint8Array, originalImage: Uint8Array, promptId: string }) => {
+export const saveWallpaperFiles = async ({ image, promptId }: { image: Uint8Array, promptId: string }) => {
     if (!await exists(promptId, { baseDir: BaseDirectory.AppData })) {
         await mkdir(promptId, {
             baseDir: BaseDirectory.AppData
         })
     }
 
-    const upscalePath = await join(promptId, "upscale.jpeg")
-    const originalPath = await join(promptId, "original.jpeg")
+    const imagePath = await join(promptId, "image.jpeg")
 
-    await Promise.allSettled([
-        writeFile(upscalePath, upscaleImage, { baseDir: BaseDirectory.AppData }),
-        writeFile(originalPath, originalImage, { baseDir: BaseDirectory.AppData })
-    ])
+    return writeFile(imagePath, image, { baseDir: BaseDirectory.AppData })
 }

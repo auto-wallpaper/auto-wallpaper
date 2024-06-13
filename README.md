@@ -32,6 +32,8 @@
 - [x] High-resolution support: Enjoy stunning visuals with **4K resolution** option.
 - [x] Lightweight and free to use: No limitations or hidden costs.
 - [x] Launch on startup: Get greeted by a fresh wallpaper whenever you turn on your computer.
+- [x] [NEW] Albums of prompts: save your prompts in different albums and generate them sequentially or randomly
+- [x] [NEW] High-detailed upscale: Upscale your generations to a highly detailed wallpaper (it's gonna hit your eyes, believe me!)
 - [ ] Mobile support: Bring the Auto Wallpaper experience to your mobile devices.
 
 Any PR is welcome :)
@@ -70,9 +72,8 @@ We welcome your contributions! Feel free to share your ideas, experiences, and p
 This project is purely for educational purposes and is not intended for commercial gain. It will remain open-source indefinitely.
 
 This application utilizes automated interactions with other web services:
-- [leonardo.ai](https://leonardo.ai/) for image generation 
-- [temp-mail.io](https://temp-mail.io/) for temp emails
-- [iloveimg.com](https://www.iloveimg.com/upscale-image) for image upscaling
+- [leonardo.ai](https://leonardo.ai/) for image generation and upscaling
+- [1secmail.com](https://1secmail.com/) for temp emails
 
 We respect the terms of service of these platforms and will readily remove any automation upon request from their owners.
 
