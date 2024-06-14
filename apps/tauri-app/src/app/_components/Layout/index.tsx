@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useElementSize } from "@mantine/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { primaryMonitor } from "@tauri-apps/api/window";
@@ -64,13 +64,29 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
     void handler();
   }, []);
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const listener = () => {
+      if (!scrollAreaRef.current) return;
+
+      scrollAreaRef.current.style.height = "0px";
+      scrollAreaRef.current.style.height = `${
+        viewportRef.current?.clientHeight ?? 0
+      }px`;
+    };
+    listener();
+    window.addEventListener("resize", listener);
+    window.addEventListener("orientationchange", listener);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Titlebar />
       <Navbar />
 
-      <div ref={viewportRef} className="flex-1 px-4 py-6 lg:px-8">
-        <ScrollArea style={{ height }}>{children}</ScrollArea>
+      <div ref={viewportRef} className="flex-1 px-4 pt-6 lg:px-8">
+        <ScrollArea ref={scrollAreaRef} className="pb-10">{children}</ScrollArea>
       </div>
     </QueryClientProvider>
   );
