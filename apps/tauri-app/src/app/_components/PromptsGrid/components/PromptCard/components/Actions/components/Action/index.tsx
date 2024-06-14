@@ -14,6 +14,7 @@ type ActionProps = React.PropsWithChildren<{
   };
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
+  disabled?: boolean;
 }>;
 
 const Action: React.FC<ActionProps> = ({
@@ -22,11 +23,16 @@ const Action: React.FC<ActionProps> = ({
   className,
   onOpenChange,
   open,
+  disabled,
 }) => {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogTrigger asChild>
-        <ActionButton className={className?.trigger} Icon={Icon} />
+        <ActionButton
+          className={className?.trigger}
+          Icon={Icon}
+          disabled={disabled}
+        />
       </DialogTrigger>
       <DialogContent
         className={cn("max-w-[35rem]", className?.content)}

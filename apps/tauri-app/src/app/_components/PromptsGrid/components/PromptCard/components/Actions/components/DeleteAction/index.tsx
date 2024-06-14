@@ -16,13 +16,18 @@ import { sortByDate } from "~/utils/sort";
 import { removeWallpaperFiles } from "~/utils/wallpapers";
 import Action from "../Action";
 
-const DeleteAction: React.FC = () => {
+type DeleteActionProps = {
+  disabled?: boolean;
+};
+
+const DeleteAction: React.FC<DeleteActionProps> = ({ disabled }) => {
   const { id } = usePromptContext();
 
   return (
     <Action
       Icon={MdOutlineDeleteOutline}
       className={{ trigger: "text-red-400", content: "border-red-500" }}
+      disabled={disabled}
     >
       <DialogHeader>
         <DialogTitle>Are you absolutely sure?</DialogTitle>

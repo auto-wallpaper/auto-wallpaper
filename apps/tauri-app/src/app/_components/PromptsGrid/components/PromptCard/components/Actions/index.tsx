@@ -50,36 +50,36 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
           }
         />
       )}
-      {hasImage && (
-        <ActionButton
-          Icon={LuDownload}
-          onClick={async () => {
-            const destinationPath = await save({
-              filters: [
-                {
-                  name: "Image",
-                  extensions: ["jpeg", "jpg"],
-                },
-              ],
-              title: "Save the wallpaper",
-              defaultPath: await join(
-                await downloadDir(),
-                createFilename(prompt),
-              ),
-            });
 
-            if (!destinationPath) return;
+      <ActionButton
+        Icon={LuDownload}
+        disabled={!hasImage}
+        onClick={async () => {
+          const destinationPath = await save({
+            filters: [
+              {
+                name: "Image",
+                extensions: ["jpeg", "jpg"],
+              },
+            ],
+            title: "Save the wallpaper",
+            defaultPath: await join(
+              await downloadDir(),
+              createFilename(prompt),
+            ),
+          });
 
-            const sourcePath = await getWallpaperPathOf(id);
+          if (!destinationPath) return;
 
-            if (!sourcePath) return;
+          const sourcePath = await getWallpaperPathOf(id);
 
-            await writeFile(destinationPath, await readFile(sourcePath));
-          }}
-        />
-      )}
+          if (!sourcePath) return;
+
+          await writeFile(destinationPath, await readFile(sourcePath));
+        }}
+      />
       <EditAction />
-      {prompts && prompts.length > 1 && <DeleteAction />}
+      <DeleteAction disabled={!(prompts && prompts.length > 1)} />
     </>
   );
 };
