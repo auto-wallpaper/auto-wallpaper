@@ -11,6 +11,11 @@ const defaultPrompts = [
   }
 ]
 
+const promptsValidationCache: { list: string[]; map: Record<string, boolean> } = {
+  list: [],
+  map: {},
+}
+
 export const UserStore = makeStore(".user.dat", {
   location: makeField({
     schema: z.object({
@@ -40,16 +45,30 @@ export const UserStore = makeStore(".user.dat", {
     schema: z.object({
       id: z.string().uuid().default(() => crypto.randomUUID()),
       prompt: z.string().min(3).max(1000).superRefine(async (v, ctx) => {
-        try {
-          await validatePrompt(v)
-        } catch (e) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.invalid_string,
-            message: e as string,
-            validation: "regex"
-          })
+        if (promptsValidationCache.list.length > 100) {
+          const last = promptsValidationCache.list.pop()!
 
-          return e
+          delete promptsValidationCache.map[last]
+        }
+
+        if (!(v in promptsValidationCache.map)) {
+          try {
+            await validatePrompt(v)
+
+            promptsValidationCache.map[v] = true
+            promptsValidationCache.list.push(v)
+          } catch (e) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.invalid_string,
+              message: e as string,
+              validation: "regex"
+            })
+
+            promptsValidationCache.map[v] = false
+            promptsValidationCache.list.push(v)
+
+            return e
+          }
         }
       }),
       upscale: z.object({
