@@ -39,6 +39,7 @@ import { ToggleGroup, ToggleGroupItem } from "@acme/ui/toggle-group";
 import { usePromptContext } from "~/app/_components/PromptCard";
 import { UserStore } from "~/stores/user";
 import { generatePrompt } from "~/utils/commands";
+import { log } from "~/utils/log";
 import Action from "../Action";
 
 const EditAction: React.FC = () => {
@@ -85,8 +86,11 @@ const EditAction: React.FC = () => {
   useEffect(() => {
     const handler = async () => {
       if (!form.formState.isValid || form.formState.isValidating) return;
-
-      setBuiltPrompt(await generatePrompt(formValues.prompt));
+      try {
+        setBuiltPrompt(await generatePrompt(formValues.prompt));
+      } catch (e) {
+        void log.error("invalid prompt while building prompt");
+      }
     };
 
     void handler();
