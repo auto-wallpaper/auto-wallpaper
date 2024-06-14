@@ -27,7 +27,7 @@ pub async fn generate_prompt(
 }
 
 #[tauri::command]
-pub fn validate_prompt(prompt: String) -> Result<(), String> {
+pub async fn validate_prompt(prompt: String) -> Result<(), String> {
     match PromptEngine::validate(prompt) {
         Ok(_) => Ok(()),
         Err(e) => match e {
