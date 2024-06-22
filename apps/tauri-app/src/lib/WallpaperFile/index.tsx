@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { readFile } from "@tauri-apps/plugin-fs";
 import { create } from "zustand";
 
 import { getWallpaperPathOf } from "~/utils/wallpapers";
@@ -28,8 +28,7 @@ export const useWallpaperSourceStore = create<WallpaperSourceState>(
         set((prev) => ({
           sources: {
             ...prev.sources,
-            [promptId]:
-              filePath && `${convertFileSrc(filePath)}?t=${Date.now()}`,
+            [promptId]: filePath,
           },
         }));
       } finally {
@@ -46,7 +45,7 @@ export const useWallpaperSource = (promptId?: string) => {
   const refresh = useWallpaperSourceStore((state) => state.refresh);
   const exists = useWallpaperSourceStore((state) => state.exists);
   const source = useWallpaperSourceStore(
-    (state) => (promptId && state.sources[promptId]) ?? null,
+    (state) => (promptId ? state.sources[promptId] : null) ?? null,
   );
 
   useEffect(() => {

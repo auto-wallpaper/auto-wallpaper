@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useHash } from "@mantine/hooks";
 
 import { DraggableCard, PromptCard } from "~/app/_components/PromptCard";
 import { useWallpaperSource } from "~/lib/WallpaperFile";
 import { UserStore } from "~/stores/user";
 import Actions from "./components/Actions";
+import { readFile } from "@tauri-apps/plugin-fs";
 
 type PromptCardProps = {
   data: (typeof UserStore.prompts.$inferOutput)[number];
@@ -32,7 +33,7 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
         ref={cardRef}
         id={id}
         prompt={prompt}
-        imageSrc={source}
+        imageLoader={useCallback(async () => source === null ? null : await readFile(source), [source])}
         className={{
           root:
             selectedPrompt?.type === "prompt" &&

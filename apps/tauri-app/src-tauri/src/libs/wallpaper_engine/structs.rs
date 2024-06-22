@@ -1,6 +1,5 @@
 use std::io;
 
-use rimage::image::ImageError;
 use serde::{Deserialize, Serialize};
 
 use crate::libs::{device_wallpaper::DeviceWallpaperError, prompt_engine::PromptEngineError};
@@ -80,7 +79,6 @@ pub enum WallpaperEngineError {
     IoError(io::Error),
     StorePluginError(tauri_plugin_store::Error),
     TauriError(tauri::Error),
-    OptimizationError(ImageError),
 }
 
 impl From<reqwest::Error> for WallpaperEngineError {
@@ -128,11 +126,5 @@ impl From<tauri_plugin_store::Error> for WallpaperEngineError {
 impl From<PromptEngineError> for WallpaperEngineError {
     fn from(err: PromptEngineError) -> Self {
         WallpaperEngineError::PromptEngineError(err)
-    }
-}
-
-impl From<ImageError> for WallpaperEngineError {
-    fn from(err: ImageError) -> Self {
-        WallpaperEngineError::OptimizationError(err)
     }
 }

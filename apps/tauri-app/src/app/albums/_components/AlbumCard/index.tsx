@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { MdPlaylistPlay } from "react-icons/md";
 
@@ -8,6 +8,7 @@ import { useWallpaperSource } from "~/lib/WallpaperFile";
 import { UserStore } from "~/stores/user";
 import AlbumActions from "./components/Actions";
 import { AlbumContext } from "./contexts";
+import { readFile } from "@tauri-apps/plugin-fs";
 
 type AlbumCardProps = {
   album: (typeof AlbumsStore.albums.$inferOutput)[number];
@@ -43,7 +44,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album }) => {
             id={album.id}
             prompt={album.name}
             actions={<AlbumActions />}
-            imageSrc={source}
+            imageLoader={useCallback(async () => source === null ? null : await readFile(source), [source])}
             onSelect={() => {
               void UserStore.selectedPrompt.set({
                 id: album.id,

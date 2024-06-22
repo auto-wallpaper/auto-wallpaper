@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetch } from "@tauri-apps/plugin-http";
 import { IoAdd } from "react-icons/io5";
@@ -9,7 +9,7 @@ import Spinner from "~/app/_components/Spinner";
 import { UserStore } from "~/stores/user";
 import { saveWallpaperFiles } from "~/utils/wallpapers";
 
-export type CardProps = Omit<PromptCardData, "imageSrc">;
+export type CardProps = Omit<PromptCardData, "imageLoader">;
 
 const Card: React.FC<CardProps> = ({ id, prompt }) => {
   const router = useRouter();
@@ -20,7 +20,11 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
   return (
     <PromptCard
       id={id}
-      imageSrc={imageSrc}
+      imageLoader={useCallback(async () => {
+        const resp = await fetch(imageSrc);
+
+        return resp.arrayBuffer();
+      }, [imageSrc])}
       prompt={prompt}
       actions={
         <>

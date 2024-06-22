@@ -1,6 +1,5 @@
 "use client";
 
-import type { ImageProps } from "next/image";
 import type { Dispatch, PointerEvent, SetStateAction } from "react";
 import type { IconType } from "react-icons/lib";
 import React, {
@@ -9,6 +8,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import Image from "next/image";
 import {
@@ -20,7 +20,9 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Compressor from "compressorjs";
 import { MdOutlineImageNotSupported } from "react-icons/md";
+import { Promisable } from "type-fest";
 
 import type { ClassValue } from "@acme/ui";
 import { cn } from "@acme/ui";
@@ -32,12 +34,15 @@ import {
   TooltipTrigger,
 } from "@acme/ui/tooltip";
 
+import { log } from "~/utils/log";
+import Spinner from "../Spinner";
+
 export const VARIABLE_REGEX = /\$([\w_]+)/g;
 
 export type PromptCardData = {
   id: string;
   prompt: string;
-  imageSrc: ImageProps["src"] | null;
+  imageLoader: () => Promisable<(Uint8Array | ArrayBufferLike) | null>;
 };
 
 const PromptContext = createContext<PromptCardData>(null as never);
@@ -110,9 +115,45 @@ type PromptCardProps = PromptCardData & {
 };
 
 export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
-  ({ id, imageSrc, prompt, className, actions, onSelect }, ref) => {
+  ({ id, imageLoader, prompt, className, actions, onSelect }, ref) => {
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
+    const [imageStatus, setImageStatus] = useState<
+      "loading" | "loaded" | "error"
+    >("loading");
+
+    useEffect(() => {
+      void (async () => {
+        setImageStatus("loading");
+        
+        const imageData = await imageLoader();
+
+        if (!imageData) return;
+
+        const file = new File(
+          ["buffer" in imageData ? imageData.buffer : imageData],
+          "file.jpeg",
+          {
+            type: "image/jpeg",
+          },
+        );
+
+        new Compressor(file, {
+          quality: 0.8,
+          maxWidth: 800,
+          success(result) {
+            setImageSrc(URL.createObjectURL(result));
+            setImageStatus("loaded");
+          },
+          error(err) {
+            void log.error(err.message);
+            setImageStatus("error");
+          },
+        });
+      })();
+    }, [imageLoader]);
+
     return (
-      <PromptContext.Provider value={{ id, prompt, imageSrc }}>
+      <PromptContext.Provider value={{ id, prompt, imageLoader: imageLoader }}>
         <div
           ref={ref}
           id={id}
@@ -131,13 +172,21 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
                 fill
                 className="rounded-md object-cover"
               />
+            ) : imageStatus === "loading" ? (
+              <Spinner />
             ) : (
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1">
-                  <MdOutlineImageNotSupported />
-                  <p>No Image Yet.</p>
-                </div>
-                <p>Generate one to show here</p>
+                {imageStatus === "error" ? (
+                  <p>Failed to load the wallpaper</p>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-1">
+                      <MdOutlineImageNotSupported />
+                      <p>No Image Yet.</p>
+                    </div>
+                    <p>Generate one to show here</p>
+                  </>
+                )}
               </div>
             )}
           </span>
