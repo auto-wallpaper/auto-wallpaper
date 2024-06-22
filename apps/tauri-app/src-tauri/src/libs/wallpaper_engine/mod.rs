@@ -8,7 +8,6 @@ use structs::{AIGenerationData, Album, AlbumSelectionType, Prompt, PromptUpscale
 
 use chrono::{DateTime, Utc};
 use log::error;
-use rimage::image::ImageError;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::Manager;
@@ -20,7 +19,7 @@ use tokio::{
 
 use crate::{
     states::prompt_engine::PromptEngineStore,
-    utils::{append_to_path, generate_string, optimize_image},
+    utils::{append_to_path, generate_string},
     WallpaperEngineStatusStore, WallpaperEngineUsingPromptStore,
 };
 
@@ -382,10 +381,6 @@ impl WallpaperEngine {
 
         self.check_status().await?;
 
-        self.optimize_image("image.jpeg").await?;
-
-        self.check_status().await?;
-
         self.get_status()
             .status
             .lock()
@@ -679,30 +674,6 @@ impl WallpaperEngine {
         file.write_all(&file_data).await?;
 
         Ok(())
-    }
-
-    async fn optimize_image(&self, filename: &str) -> Result<(), ImageError> {
-        let prompt_id = self
-            .get_using_prompt()
-            .using_prompt
-            .lock()
-            .await
-            .get()
-            .unwrap()
-            .id;
-
-        let file_path = self
-            .app_handle
-            .path()
-            .resolve(
-                &format!("{}/{}", prompt_id, filename),
-                tauri::path::BaseDirectory::AppData,
-            )
-            .unwrap();
-
-        let screen_size = self.get_screen_size();
-
-        optimize_image(&file_path, &file_path, screen_size.x, screen_size.y)
     }
 
     fn get_screen_size(&self) -> ScreenSize {
