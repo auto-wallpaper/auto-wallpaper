@@ -123,32 +123,43 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
 
     useEffect(() => {
       void (async () => {
-        setImageStatus("loading");
-        
-        const imageData = await imageLoader();
+        try {
+          setImageStatus("loading");
 
-        if (!imageData) return;
+          const imageData = await imageLoader();
 
-        const file = new File(
-          ["buffer" in imageData ? imageData.buffer : imageData],
-          "file.jpeg",
-          {
-            type: "image/jpeg",
-          },
-        );
-
-        new Compressor(file, {
-          quality: 0.8,
-          maxWidth: 800,
-          success(result) {
-            setImageSrc(URL.createObjectURL(result));
+          if (!imageData) {
             setImageStatus("loaded");
-          },
-          error(err) {
-            void log.error(err.message);
-            setImageStatus("error");
-          },
-        });
+            return;
+          }
+
+          const file = new File(
+            ["buffer" in imageData ? imageData.buffer : imageData],
+            "file.jpeg",
+            {
+              type: "image/jpeg",
+            },
+          );
+
+          new Compressor(file, {
+            quality: 0.8,
+            maxWidth: 800,
+            success(result) {
+              setImageSrc(URL.createObjectURL(result));
+              setImageStatus("loaded");
+            },
+            error(err) {
+              void log.error(err.message);
+              setImageStatus("error");
+            },
+          });
+        } catch (e) {
+          void log.error(
+            typeof e === "object" && e && "message" in e && e.message,
+          );
+
+          setImageStatus("error");
+        }
       })();
     }, [imageLoader]);
 
