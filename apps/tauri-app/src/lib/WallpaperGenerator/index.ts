@@ -8,6 +8,7 @@ import { UserStore } from "~/stores/user";
 import { useWallpaperSourceStore } from "../WallpaperFile";
 import { AlbumsStore } from "~/stores/albums";
 import type { z } from "zod";
+import { getWallpaperPathOf } from "~/utils/wallpapers";
 
 const UsingPromptSchema = UserStore.prompts.schema.element.extend({
   albumId: AlbumsStore.albums.schema.element.shape.id.nullish()
@@ -68,7 +69,10 @@ export const useWallpaperEngineStore = create<WallpaperEngineState>(
       async ({ payload }) => {
         const usingPrompt = await UsingPromptSchema.parseAsync(payload.usingPrompt);
 
-        await useWallpaperSourceStore.getState().refresh(usingPrompt.id)
+        const path = await getWallpaperPathOf(usingPrompt.id)
+        if (path) {
+          await useWallpaperSourceStore.getState().load(usingPrompt.id, path)
+        }
       },
     );
 
