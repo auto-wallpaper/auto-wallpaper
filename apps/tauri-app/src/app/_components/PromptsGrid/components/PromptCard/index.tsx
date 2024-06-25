@@ -33,7 +33,7 @@ const UserPromptCard: React.FC<PromptCardProps> = ({
         ref={cardRef}
         id={id}
         prompt={prompt}
-        imageLoader={useCallback(async () => source === null ? null : await readFile(source), [source])}
+        source={source}
         className={{
           root:
             selectedPrompt?.type === "prompt" &&

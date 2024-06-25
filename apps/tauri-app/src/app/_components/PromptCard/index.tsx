@@ -34,6 +34,10 @@ import {
   TooltipTrigger,
 } from "@acme/ui/tooltip";
 
+import {
+  useWallpaperSourceStore,
+  WallpaperSourceState,
+} from "~/lib/WallpaperFile";
 import { log } from "~/utils/log";
 import Spinner from "../Spinner";
 
@@ -42,7 +46,7 @@ export const VARIABLE_REGEX = /\$([\w_]+)/g;
 export type PromptCardData = {
   id: string;
   prompt: string;
-  imageLoader: () => Promisable<(Uint8Array | ArrayBufferLike) | null>;
+  source: WallpaperSourceState["sources"][string] | null;
 };
 
 const PromptContext = createContext<PromptCardData>(null as never);
@@ -115,56 +119,9 @@ type PromptCardProps = PromptCardData & {
 };
 
 export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
-  ({ id, imageLoader, prompt, className, actions, onSelect }, ref) => {
-    const [imageSrc, setImageSrc] = useState<string | null>(null);
-    const [imageStatus, setImageStatus] = useState<
-      "loading" | "loaded" | "error"
-    >("loading");
-
-    useEffect(() => {
-      void (async () => {
-        try {
-          setImageStatus("loading");
-
-          const imageData = await imageLoader();
-
-          if (!imageData) {
-            setImageStatus("loaded");
-            return;
-          }
-
-          const file = new File(
-            ["buffer" in imageData ? imageData.buffer : imageData],
-            "file.jpeg",
-            {
-              type: "image/jpeg",
-            },
-          );
-
-          new Compressor(file, {
-            quality: 0.8,
-            maxWidth: 800,
-            success(result) {
-              setImageSrc(URL.createObjectURL(result));
-              setImageStatus("loaded");
-            },
-            error(err) {
-              void log.error(err.message);
-              setImageStatus("error");
-            },
-          });
-        } catch (e) {
-          void log.error(
-            typeof e === "object" && e && "message" in e && e.message,
-          );
-
-          setImageStatus("error");
-        }
-      })();
-    }, [imageLoader]);
-
+  ({ id, source, prompt, className, actions, onSelect }, ref) => {
     return (
-      <PromptContext.Provider value={{ id, prompt, imageLoader: imageLoader }}>
+      <PromptContext.Provider value={{ id, prompt, source }}>
         <div
           ref={ref}
           id={id}
@@ -176,18 +133,18 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
           onClick={() => onSelect?.()}
         >
           <span className="absolute bottom-0 left-0 right-0 top-0 flex h-full w-full flex-col items-center justify-center text-sm">
-            {imageSrc ? (
+            {source?.src ? (
               <Image
-                src={imageSrc}
+                src={source?.src}
                 alt=""
                 fill
                 className="rounded-md object-cover"
               />
-            ) : imageStatus === "loading" ? (
+            ) : !source || source.status === "loading" ? (
               <Spinner />
             ) : (
               <div className="text-center">
-                {imageStatus === "error" ? (
+                {source?.status === "failed" ? (
                   <p>Failed to load the wallpaper</p>
                 ) : (
                   <>
@@ -209,7 +166,7 @@ export const PromptCard = forwardRef<HTMLDivElement, PromptCardProps>(
           <div
             className={cn(
               "absolute bottom-0 left-0 z-10 mt-auto h-max w-full rounded-b-md px-2 pb-4 pt-32",
-              imageSrc && "bg-gradient-to-t from-black/90 to-transparent",
+              source?.src && "bg-gradient-to-t from-black/90 to-transparent",
             )}
           >
             <p className="line-clamp-3 text-center text-xs">

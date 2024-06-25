@@ -6,10 +6,14 @@ import { IoAdd } from "react-icons/io5";
 import type { PromptCardData } from "~/app/_components/PromptCard";
 import { ActionButton, PromptCard } from "~/app/_components/PromptCard";
 import Spinner from "~/app/_components/Spinner";
+import {
+  useWallpaperSource,
+  useWallpaperSourceStore,
+} from "~/lib/WallpaperFile";
 import { UserStore } from "~/stores/user";
 import { saveWallpaperFiles } from "~/utils/wallpapers";
 
-export type CardProps = Omit<PromptCardData, "imageLoader">;
+export type CardProps = Omit<PromptCardData, "source">;
 
 const Card: React.FC<CardProps> = ({ id, prompt }) => {
   const router = useRouter();
@@ -17,14 +21,17 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
 
   const imageSrc = `https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/${id}.jpeg`;
 
+  const source = useWallpaperSourceStore((state) => state.sources[id] ?? null);
+  const load = useWallpaperSourceStore((state) => state.load);
+
+  useEffect(() => {
+    void load(id, imageSrc);
+  }, [load]);
+
   return (
     <PromptCard
       id={id}
-      imageLoader={useCallback(async () => {
-        const resp = await fetch(imageSrc);
-
-        return resp.arrayBuffer();
-      }, [imageSrc])}
+      source={source}
       prompt={prompt}
       actions={
         <>
