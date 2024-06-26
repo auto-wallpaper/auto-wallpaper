@@ -8,15 +8,15 @@
 ### Download links:
 
 **Windows:**  
-   - [.exe installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.2_x64-setup.exe) 
-   - [.msi installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.2_x64_en-US.msi)
+   - [.exe installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.3_x64-setup.exe) 
+   - [.msi installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.3_x64_en-US.msi)
 
 **Linux:** 
-   - [Debian package](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.2.2_amd64.deb) 
-   - [AppImage](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.2.2_amd64.AppImage)
+   - [Debian package](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.2.3_amd64.deb) 
+   - [AppImage](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/auto-wallpaper_0.2.3_amd64.AppImage)
    
 **Mac:** 
-   - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.2_x64.dmg)
+   - [.dmg installer](https://github.com/auto-wallpaper/auto-wallpaper/releases/latest/download/Auto.Wallpaper_0.2.3_x64.dmg)
 
 ### Screenshots
 
