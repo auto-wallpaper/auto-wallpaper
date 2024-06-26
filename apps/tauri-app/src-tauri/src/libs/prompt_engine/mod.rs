@@ -1,6 +1,8 @@
 use std::{collections::HashMap, time::Duration};
+extern crate chrono;
+extern crate chrono_tz;
 
-use chrono::{NaiveDateTime, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Timelike, Utc};
 use chrono_tz::Tz;
 use log::error;
 use regex::Regex;
@@ -155,9 +157,9 @@ impl PromptEngine {
 
         let tz: Tz = location.timezone.parse().unwrap();
 
-        let now = tz.from_utc_datetime(
-            &NaiveDateTime::from_timestamp_millis(Utc::now().timestamp_millis()).unwrap(),
-        );
+        let now = &DateTime::from_timestamp_millis(Utc::now().timestamp_millis())
+            .unwrap()
+            .with_timezone(&tz);
 
         let hour = now.hour();
 
