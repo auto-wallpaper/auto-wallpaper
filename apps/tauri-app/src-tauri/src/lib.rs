@@ -40,7 +40,7 @@ use serde::Deserialize;
 use serde_json::json;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
-    tray::ClickType,
+    tray::TrayIconEvent,
     AppHandle, Manager,
 };
 use tauri_plugin_aptabase::EventTracker;
@@ -121,6 +121,7 @@ pub fn run() {
     }));
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_sentry::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
@@ -163,14 +164,17 @@ pub fn run() {
                 }
                 _ => (),
             });
-            tray.on_tray_icon_event(|tray, event| {
-                if event.click_type == ClickType::Left {
+            tray.on_tray_icon_event(|tray, event| match event {
+                TrayIconEvent::Enter { .. } => {
                     let app = tray.app_handle();
                     build_main_window(&app);
                     if let Some(webview_window) = app.get_webview_window("main") {
                         let _ = webview_window.show();
                         let _ = webview_window.set_focus();
                     }
+                },
+                _ => {
+                    
                 }
             });
 

@@ -2,7 +2,7 @@ use tokio::sync::Mutex;
 
 use crate::libs::wallpaper_engine::{
     managers::{
-        status::WallpaperEngineStatusManager, using_prompt::WallpaperEngineUsingPromptManager
+        status::WallpaperEngineStatusManager, using_prompt::WallpaperEngineUsingPromptManager,
     },
     WallpaperEngine,
 };
