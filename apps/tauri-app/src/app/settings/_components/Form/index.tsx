@@ -1,13 +1,8 @@
 "use client";
 
-import type { Update } from "@tauri-apps/plugin-updater";
-import React, { useEffect, useState } from "react";
-import { emit } from "@tauri-apps/api/event";
-import { getVersion } from "@tauri-apps/api/app";
-import { check } from "@tauri-apps/plugin-updater";
+import React, { useEffect } from "react";
 import { z } from "zod";
 
-import { Button } from "@acme/ui/button";
 import {
   Form,
   FormControl,
@@ -26,6 +21,7 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 
+import { useUpdateStore } from "~/app/_components/Layout/components/UpdateBox";
 import { IntervalTexts, UserStore } from "~/stores/user";
 import Geocoding from "./components/Geocoding";
 
@@ -92,17 +88,7 @@ const SettingsForm: React.FC = () => {
     [watchedFormFields.interval],
   );
 
-  const [version, setVersion] = useState("");
-  const [update, setUpdate] = useState<Update | null>(null);
-
-  useEffect(() => {
-    const handler = async () => {
-      setVersion(await getVersion());
-      setUpdate(await check());
-    };
-
-    void handler();
-  }, []);
+  const checkForUpdate = useUpdateStore((state) => state.check);
 
   return (
     <Form {...form}>
@@ -182,34 +168,12 @@ const SettingsForm: React.FC = () => {
             }
           />
 
-          <Field
-            label={`Version (${
-              update?.available ? "An update is available" : "You're up to date"
-            })`}
-            control={
-              <div className="mt-1">
-                <p className="m-0 text-sm font-normal">
-                  current version: <span>v{version}</span>
-                </p>
-
-                {update?.available ? (
-                  <Button
-                    className="mt-1"
-                    onClick={() => void emit("tauri://update")}
-                  >
-                    Update to v{update.version}
-                  </Button>
-                ) : (
-                  <Button
-                    className="mt-1"
-                    onClick={async () => setUpdate(await check())}
-                  >
-                    check for updates
-                  </Button>
-                )}
-              </div>
-            }
-          />
+          <button
+            className="-mt-4 w-max text-sm text-zinc-400 underline-offset-1 hover:underline"
+            onClick={() => checkForUpdate()}
+          >
+            check for updates
+          </button>
         </div>
       </form>
     </Form>
