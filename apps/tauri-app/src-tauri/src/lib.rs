@@ -40,7 +40,6 @@ use serde::Deserialize;
 use serde_json::json;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
-    tray::TrayIconEvent,
     AppHandle, Manager,
 };
 use tauri_plugin_aptabase::EventTracker;
@@ -151,31 +150,27 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
+            let open = MenuItemBuilder::with_id("open", "Open Auto Wallpaper").build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let menu = MenuBuilder::new(app).items(&[&quit]).build()?;
+            let menu = MenuBuilder::new(app).items(&[&quit, &open]).build()?;
 
             let tray = app.tray_by_id("main").unwrap();
 
             tray.set_menu(Some(menu)).unwrap();
             tray.set_show_menu_on_left_click(false).unwrap();
-            tray.on_menu_event(move |_, event| match event.id().as_ref() {
-                "quit" => {
-                    std::process::exit(0);
-                }
-                _ => (),
-            });
-            tray.on_tray_icon_event(|tray, event| match event {
-                TrayIconEvent::Enter { .. } => {
-                    let app = tray.app_handle();
+            tray.on_menu_event(move |app, event| match event.id().as_ref() {
+                "open" => {
                     build_main_window(&app);
+
                     if let Some(webview_window) = app.get_webview_window("main") {
                         let _ = webview_window.show();
                         let _ = webview_window.set_focus();
                     }
-                },
-                _ => {
-                    
                 }
+                "quit" => {
+                    std::process::exit(0);
+                }
+                _ => (),
             });
 
             app.manage(PromptEngineStore {
