@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
-import { readFile } from "@tauri-apps/plugin-fs";
 import { MdPlaylistPlay } from "react-icons/md";
 
 import type { AlbumsStore } from "~/stores/albums";

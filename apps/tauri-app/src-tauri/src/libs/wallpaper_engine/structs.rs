@@ -2,28 +2,13 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 
-use crate::libs::{device_wallpaper::DeviceWallpaperError, prompt_engine::PromptEngineError};
+use crate::libs::{
+    device_wallpaper::DeviceWallpaperError, prompt_engine::PromptEngineError, stores::{self, user::PromptUpscale},
+};
 
 use super::{
     managers::using_prompt::WallpaperEngineUsingPromptError, models::leonardo::GraphqlRequestError,
 };
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PromptUpscale {
-    pub creativity_strength: u8,
-    pub style: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Prompt {
-    pub id: String,
-    pub prompt: String,
-    pub generated_at: Option<String>,
-    pub upscale: Option<PromptUpscale>,
-    pub created_at: String,
-}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -39,27 +24,6 @@ pub struct UsingPrompt {
 pub struct AIGenerationData {
     pub url: String,
     pub id: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub enum AlbumSelectionType {
-    Sequential,
-    Random,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Album {
-    pub id: String,
-    pub prompts: Vec<String>,
-    pub selection_type: AlbumSelectionType,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ScreenSize {
-    pub x: u32,
-    pub y: u32,
 }
 
 #[derive(Debug)]
@@ -78,6 +42,7 @@ pub enum WallpaperEngineError {
     NetworkError(reqwest::Error),
     IoError(io::Error),
     StorePluginError(tauri_plugin_store::Error),
+    RepositoryError(stores::base::Error),
     TauriError(tauri::Error),
 }
 
@@ -120,6 +85,12 @@ impl From<DeviceWallpaperError> for WallpaperEngineError {
 impl From<tauri_plugin_store::Error> for WallpaperEngineError {
     fn from(err: tauri_plugin_store::Error) -> Self {
         WallpaperEngineError::StorePluginError(err)
+    }
+}
+
+impl From<stores::base::Error> for WallpaperEngineError {
+    fn from(err: stores::base::Error) -> Self {
+        WallpaperEngineError::RepositoryError(err)
     }
 }
 

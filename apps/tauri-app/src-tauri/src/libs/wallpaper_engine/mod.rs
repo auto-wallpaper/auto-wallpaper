@@ -2,14 +2,11 @@ pub mod managers;
 mod models;
 pub mod structs;
 
-use rand::seq::SliceRandom;
-use std::{cmp::Ordering, io, time::Duration};
-use structs::{AIGenerationData, Album, AlbumSelectionType, Prompt, PromptUpscale, UsingPrompt};
+use std::{io, time::Duration};
+use structs::{AIGenerationData, UsingPrompt};
 
-use chrono::{DateTime, Utc};
 use log::error;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde::Serialize;
 use tauri::Manager;
 use tokio::{
     fs::{create_dir_all, File},
@@ -18,6 +15,7 @@ use tokio::{
 };
 
 use crate::{
+    libs::stores::user::SelectedPromptType,
     states::prompt_engine::PromptEngineStore,
     utils::{append_to_path, generate_string},
     WallpaperEngineStatusStore, WallpaperEngineUsingPromptStore,
@@ -29,19 +27,24 @@ use self::{
         leonardo::{GetAIGenerationFeedGenerationStatus, Leonardo},
         mailbox::one_secmail::OneSecmail as Mailbox,
     },
-    structs::{ScreenSize, WallpaperEngineError},
+    structs::WallpaperEngineError,
 };
 
-use super::{device_wallpaper::DeviceWallpaper, store::StoreManager};
+use super::{
+    device_wallpaper::DeviceWallpaper,
+    stores::{
+        albums::AlbumsRepository,
+        user::{PromptUpscale, UserRepository},
+    },
+};
 
 const PASSWORD: &str = "abc123ABC!@#";
 
 pub struct WallpaperEngine {
     leonardo: Option<Leonardo>,
     mailbox: Option<Mailbox>,
-    temp_store: StoreManager,
-    user_store: StoreManager,
-    albums_store: StoreManager,
+    user_repository: UserRepository,
+    albums_repository: AlbumsRepository,
     device_wallpaper: DeviceWallpaper,
     app_handle: tauri::AppHandle,
 }
@@ -51,9 +54,8 @@ impl WallpaperEngine {
         Self {
             leonardo: None,
             mailbox: None,
-            temp_store: StoreManager::make_temp_store(app_handle),
-            user_store: StoreManager::make_user_store(app_handle),
-            albums_store: StoreManager::make_albums_store(app_handle),
+            user_repository: UserRepository::open(app_handle),
+            albums_repository: AlbumsRepository::open(app_handle),
             device_wallpaper: DeviceWallpaper::new(app_handle),
             app_handle: app_handle.clone(),
         }
@@ -68,107 +70,23 @@ impl WallpaperEngine {
     }
 
     pub async fn generate_selected_prompt(&mut self) -> Result<UsingPrompt, WallpaperEngineError> {
-        #[derive(Deserialize, PartialEq)]
-        #[serde(rename_all = "lowercase")]
-        enum SelectedPromptTypes {
-            Prompt,
-            Album,
-        }
-
-        #[derive(Deserialize)]
-        struct SelectedPrompt {
-            id: String,
-            #[serde(rename = "type")]
-            prompt_type: SelectedPromptTypes,
-        }
-
-        let selected_prompt = self
-            .user_store
-            .get::<SelectedPrompt>("selectedPrompt")?
-            .unwrap();
+        let selected_prompt = self.user_repository.get_selected_prompt()?;
 
         match selected_prompt.prompt_type {
-            SelectedPromptTypes::Album => self.generate_by_album_id(&selected_prompt.id).await,
-            SelectedPromptTypes::Prompt => self.generate_by_id(&selected_prompt.id, None).await,
+            SelectedPromptType::Album => self.generate_by_album_id(selected_prompt.id).await,
+            SelectedPromptType::Prompt => self.generate_by_id(&selected_prompt.id, None).await,
         }
     }
 
     pub async fn generate_by_album_id(
         &mut self,
-        album_id: &str,
+        album_id: String,
     ) -> Result<UsingPrompt, WallpaperEngineError> {
-        let albums = self.albums_store.get::<Vec<Album>>("albums")?.unwrap();
+        let chosen_prompt_id = self
+            .albums_repository
+            .get_the_chosen_prompt_of_album(album_id.clone())?;
 
-        let filtered_albums: Vec<Album> = albums
-            .into_iter()
-            .filter(|album| album.id == album_id)
-            .collect();
-
-        let chosen_album = filtered_albums.get(0).unwrap();
-
-        let chosen_prompt = match chosen_album.selection_type {
-            AlbumSelectionType::Random => chosen_album
-                .prompts
-                .choose(&mut rand::thread_rng())
-                .unwrap()
-                .clone(),
-            AlbumSelectionType::Sequential => {
-                let prompts = self.user_store.get::<Vec<Prompt>>("prompts")?.unwrap();
-
-                let mut prompts_of_album = prompts
-                    .into_iter()
-                    .filter(|prompt| chosen_album.prompts.contains(&prompt.id))
-                    .collect::<Vec<Prompt>>();
-
-                prompts_of_album.sort_by(|a, b| {
-                    if a.generated_at.is_none() {
-                        return Ordering::Greater;
-                    };
-                    if b.generated_at.is_none() {
-                        return Ordering::Less;
-                    };
-
-                    let offset = DateTime::parse_from_rfc3339(&b.generated_at.clone().unwrap())
-                        .unwrap()
-                        .timestamp()
-                        - DateTime::parse_from_rfc3339(&a.generated_at.clone().unwrap())
-                            .unwrap()
-                            .timestamp();
-
-                    if offset == 0 {
-                        return Ordering::Equal;
-                    }
-
-                    if offset > 0 {
-                        return Ordering::Greater;
-                    }
-
-                    Ordering::Less
-                });
-
-                let most_recent_generated_prompt = prompts_of_album.get(0).unwrap();
-
-                let index = if let Some(index) = chosen_album
-                    .prompts
-                    .clone()
-                    .into_iter()
-                    .position(|prompt| prompt == most_recent_generated_prompt.id)
-                {
-                    if index + 1 < chosen_album.prompts.len() {
-                        index + 1
-                    } else {
-                        0
-                    }
-                } else {
-                    0
-                };
-
-                chosen_album.prompts[index].clone()
-            }
-        };
-
-        self.generate_by_id(&chosen_prompt, Some(chosen_album.id.clone()))
-            .await
+        self.generate_by_id(&chosen_prompt_id, Some(album_id)).await
     }
 
     fn get_prompt_engine(&self) -> tauri::State<'_, PromptEngineStore> {
@@ -198,26 +116,26 @@ impl WallpaperEngine {
             return Err(WallpaperEngineError::MoreThanOneGenerationAtOnceError);
         }
 
-        let mut result: Option<Result<UsingPrompt, WallpaperEngineError>> = None;
+        let mut generation_result: Option<Result<UsingPrompt, WallpaperEngineError>> = None;
 
         for i in 0..3 {
             match self.generate(prompt_id, album_id.clone()).await {
                 Ok(r) => {
-                    result = Some(Ok(r));
+                    generation_result = Some(Ok(r));
                     break;
                 }
                 Err(error) => {
                     match error {
                         WallpaperEngineError::Canceled
                         | WallpaperEngineError::UsingPromptError(_) => {
-                            result = Some(Err(error));
+                            generation_result = Some(Err(error));
                             break;
                         }
                         _ => (),
                     }
 
                     if i == 2 {
-                        result = Some(Err(error));
+                        generation_result = Some(Err(error));
                         break;
                     }
 
@@ -231,46 +149,15 @@ impl WallpaperEngine {
             }
         }
 
-        self.get_status()
-            .status
-            .lock()
-            .await
-            .set(WallpaperEngineStatus::Idle)?;
-
         self.get_using_prompt().using_prompt.lock().await.clear()?;
-
-        self.temp_store
-            .set(
-                "lastGenerationTimestamp",
-                json!(Utc::now().format("%Y-%m-%dT%H:%M:%S.%fZ").to_string()),
-            )
-            .unwrap();
 
         let _ = self.get_leonardo().delete_account().await;
 
-        match result {
+        let result = match generation_result {
             Some(result) => match result {
                 Ok(r) => {
-                    let prompts = self.user_store.get::<Vec<Prompt>>("prompts")?.unwrap();
-                    self.user_store.set(
-                        "prompts",
-                        json!(prompts
-                            .into_iter()
-                            .map(|prompt| {
-                                if prompt.id == prompt_id {
-                                    let mut clone = prompt.clone();
-
-                                    clone.generated_at = Some(
-                                        Utc::now().format("%Y-%m-%dT%H:%M:%S.%fZ").to_string(),
-                                    );
-
-                                    return clone;
-                                }
-
-                                prompt
-                            })
-                            .collect::<Vec<Prompt>>()),
-                    )?;
+                    self.user_repository
+                        .update_prompt_generated_at_field(prompt_id.to_string())?;
 
                     self.device_wallpaper.refresh_wallpaper()?;
 
@@ -292,7 +179,15 @@ impl WallpaperEngine {
                 Err(e) => Err(e),
             },
             None => Err(WallpaperEngineError::UnexpectedError),
-        }
+        };
+
+        self.get_status()
+            .status
+            .lock()
+            .await
+            .set(WallpaperEngineStatus::Idle)?;
+
+        return result;
     }
 
     async fn generate(
@@ -517,7 +412,7 @@ impl WallpaperEngine {
             .generate(prompt)
             .await?;
 
-        let screen_size = self.get_screen_size();
+        let screen_size = self.user_repository.get_screen_size()?;
 
         let leonardo = self.get_leonardo();
 
@@ -674,12 +569,5 @@ impl WallpaperEngine {
         file.write_all(&file_data).await?;
 
         Ok(())
-    }
-
-    fn get_screen_size(&self) -> ScreenSize {
-        self.user_store
-            .get::<ScreenSize>("screenSize")
-            .unwrap()
-            .unwrap_or(ScreenSize { x: 1, y: 1 })
     }
 }

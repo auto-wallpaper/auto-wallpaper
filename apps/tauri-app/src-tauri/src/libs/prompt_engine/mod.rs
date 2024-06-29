@@ -9,17 +9,7 @@ use regex::Regex;
 use reqwest::Client;
 use serde::Deserialize;
 
-use super::store::StoreManager;
-
-#[derive(Debug, Deserialize)]
-struct Location {
-    id: u64,
-    name: String,
-    latitude: f64,
-    longitude: f64,
-    timezone: String,
-    country: String,
-}
+use super::stores::user::UserRepository;
 
 fn get_variables(prompt: &str) -> Vec<String> {
     let regex = Regex::new(r"\$([\w_]+)").expect("invalid regex");
@@ -52,14 +42,14 @@ struct PromptEngineCache {
 }
 
 pub struct PromptEngine {
-    user_store: StoreManager,
+    user_repository: UserRepository,
     cache: Option<PromptEngineCache>,
 }
 
 impl PromptEngine {
     pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
-            user_store: StoreManager::make_user_store(app_handle),
+            user_repository: UserRepository::open(app_handle),
             cache: None,
         }
     }
@@ -114,34 +104,28 @@ impl PromptEngine {
         Ok(new_prompt)
     }
 
-    fn get_location(&self) -> Option<Location> {
-        let location = self.user_store.get::<Option<Location>>("location");
-
-        location.unwrap_or(None).unwrap_or(None)
-    }
-
     fn handle_country(&self) -> String {
-        let location = match self.get_location() {
-            Some(location) => location,
-            None => return "".to_string(),
+        let location = match self.user_repository.get_location() {
+            Ok(location) => location,
+            Err(_) => return "".to_string(),
         };
 
         location.country
     }
 
     fn handle_location_name(&self) -> String {
-        let location = match self.get_location() {
-            Some(location) => location,
-            None => return "".to_string(),
+        let location = match self.user_repository.get_location() {
+            Ok(location) => location,
+            Err(_) => return "".to_string(),
         };
 
         location.name
     }
 
     fn handle_day_time(&self) -> String {
-        let location = match self.get_location() {
-            Some(location) => location,
-            None => return "Afternoon".to_string(),
+        let location = match self.user_repository.get_location() {
+            Ok(location) => location,
+            Err(_) => return "Afternoon".to_string(),
         };
 
         let mut time_map: HashMap<&str, Vec<u32>> = HashMap::new();
@@ -173,9 +157,9 @@ impl PromptEngine {
     }
 
     async fn handle_weather(&mut self) -> String {
-        let location = match self.get_location() {
-            Some(location) => location,
-            None => return "".to_string(),
+        let location = match self.user_repository.get_location() {
+            Ok(location) => location,
+            Err(_) => return "".to_string(),
         };
 
         if let Some(cache) = &self.cache {

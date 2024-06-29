@@ -79,7 +79,7 @@ pub async fn generate_by_album_id(
         .wallpaper_engine
         .lock()
         .await
-        .generate_by_album_id(&album_id)
+        .generate_by_album_id(album_id)
         .await
     {
         Ok(_) => {

@@ -2,26 +2,26 @@ use serde::Serialize;
 use tauri::Manager;
 
 use crate::libs::{
-    store::StoreManager,
-    wallpaper_engine::structs::{Prompt, UsingPrompt},
+    stores::{self, user::UserRepository},
+    wallpaper_engine::structs::UsingPrompt,
 };
 
 #[derive(Debug)]
 pub enum WallpaperEngineUsingPromptError {
-    TauriPluginStore(tauri_plugin_store::Error),
+    RepositoryError(stores::base::Error),
     TauriError(tauri::Error),
     PromptNotFound,
-}
-
-impl From<tauri_plugin_store::Error> for WallpaperEngineUsingPromptError {
-    fn from(err: tauri_plugin_store::Error) -> Self {
-        WallpaperEngineUsingPromptError::TauriPluginStore(err)
-    }
 }
 
 impl From<tauri::Error> for WallpaperEngineUsingPromptError {
     fn from(err: tauri::Error) -> Self {
         WallpaperEngineUsingPromptError::TauriError(err)
+    }
+}
+
+impl From<stores::base::Error> for WallpaperEngineUsingPromptError {
+    fn from(err: stores::base::Error) -> Self {
+        WallpaperEngineUsingPromptError::RepositoryError(err)
     }
 }
 
@@ -34,13 +34,13 @@ struct UsingPromptChangeEventPayload {
 pub struct WallpaperEngineUsingPromptManager {
     app_handle: tauri::AppHandle,
     using_prompt: Option<UsingPrompt>,
-    user_store: StoreManager,
+    user_repository: UserRepository,
 }
 
 impl WallpaperEngineUsingPromptManager {
     pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
-            user_store: StoreManager::make_user_store(app_handle),
+            user_repository: UserRepository::open(app_handle),
             app_handle: app_handle.clone(),
             using_prompt: None,
         }
@@ -51,7 +51,7 @@ impl WallpaperEngineUsingPromptManager {
         prompt_id: &str,
         album_id: Option<String>,
     ) -> Result<UsingPrompt, WallpaperEngineUsingPromptError> {
-        let prompts = self.user_store.get::<Vec<Prompt>>("prompts")?.unwrap();
+        let prompts = self.user_repository.get_prompts()?;
 
         for prompt in prompts {
             if prompt.id == prompt_id {

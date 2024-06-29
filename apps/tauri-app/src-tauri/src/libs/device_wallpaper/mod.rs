@@ -1,40 +1,37 @@
-use std::cmp::Ordering;
-
-use chrono::DateTime;
-use serde::Deserialize;
 use tauri::Manager;
 
-use crate::{
-    libs::wallpaper_engine::structs::{Album, Prompt},
-    utils::append_to_path,
-};
+use crate::utils::append_to_path;
 
-use super::store::StoreManager;
+use super::stores::{
+    albums::AlbumsRepository,
+    base,
+    user::{SelectedPromptType, UserRepository},
+};
 
 #[derive(Debug)]
 pub enum DeviceWallpaperError {
     WallpaperNotFound,
     WallpaperChangeError,
-    StorePluginError(tauri_plugin_store::Error),
+    RepositoryError(base::Error),
 }
 
-impl From<tauri_plugin_store::Error> for DeviceWallpaperError {
-    fn from(err: tauri_plugin_store::Error) -> Self {
-        DeviceWallpaperError::StorePluginError(err)
+impl From<base::Error> for DeviceWallpaperError {
+    fn from(err: base::Error) -> Self {
+        DeviceWallpaperError::RepositoryError(err)
     }
 }
 
 pub struct DeviceWallpaper {
-    user_store: StoreManager,
-    albums_store: StoreManager,
+    user_repository: UserRepository,
+    albums_repository: AlbumsRepository,
     app_handle: tauri::AppHandle,
 }
 
 impl DeviceWallpaper {
     pub fn new(app_handle: &tauri::AppHandle) -> Self {
         Self {
-            user_store: StoreManager::make_user_store(app_handle),
-            albums_store: StoreManager::make_albums_store(app_handle),
+            user_repository: UserRepository::open(app_handle),
+            albums_repository: AlbumsRepository::open(app_handle),
             app_handle: app_handle.clone(),
         }
     }
@@ -54,76 +51,19 @@ impl DeviceWallpaper {
     }
 
     pub fn refresh_wallpaper(&self) -> Result<(), DeviceWallpaperError> {
-        #[derive(Deserialize, PartialEq)]
-        #[serde(rename_all = "lowercase")]
-        enum SelectedPromptTypes {
-            Prompt,
-            Album,
-        }
-
-        #[derive(Deserialize)]
-        struct SelectedPrompt {
-            id: String,
-            #[serde(rename = "type")]
-            prompt_type: SelectedPromptTypes,
-        }
-
-        let selected_prompt = self.user_store.get::<SelectedPrompt>("selectedPrompt")?;
-
-        if selected_prompt.is_none() {
-            return Ok(());
-        }
-
-        let selected_prompt = selected_prompt.unwrap();
+        let selected_prompt = self.user_repository.get_selected_prompt()?;
 
         match selected_prompt.prompt_type {
-            SelectedPromptTypes::Album => {
-                let albums = self.albums_store.get::<Vec<Album>>("albums")?.unwrap();
+            SelectedPromptType::Album => {
+                let prompts = self
+                    .albums_repository
+                    .get_prompts_recently_generated_first(selected_prompt.id)?;
 
-                let filtered_albums: Vec<Album> = albums
-                    .into_iter()
-                    .filter(|album| album.id == selected_prompt.id)
-                    .collect();
-
-                let chosen_album = filtered_albums.get(0).unwrap();
-
-                let prompts = self.user_store.get::<Vec<Prompt>>("prompts")?.unwrap();
-                let mut prompts_of_album = prompts
-                    .into_iter()
-                    .filter(|prompt| chosen_album.prompts.contains(&prompt.id))
-                    .collect::<Vec<Prompt>>();
-
-                prompts_of_album.sort_by(|a, b| {
-                    if a.generated_at.is_none() {
-                        return Ordering::Greater;
-                    };
-                    if b.generated_at.is_none() {
-                        return Ordering::Less;
-                    };
-
-                    let offset = DateTime::parse_from_rfc3339(&b.generated_at.clone().unwrap())
-                        .unwrap()
-                        .timestamp()
-                        - DateTime::parse_from_rfc3339(&a.generated_at.clone().unwrap())
-                            .unwrap()
-                            .timestamp();
-
-                    if offset == 0 {
-                        return Ordering::Equal;
-                    }
-
-                    if offset > 0 {
-                        return Ordering::Greater;
-                    }
-
-                    Ordering::Less
-                });
-
-                let chosen_prompt = prompts_of_album.get(0).unwrap();
+                let chosen_prompt = prompts.last().unwrap();
 
                 self.change_wallpaper(chosen_prompt.id.to_string())
             }
-            SelectedPromptTypes::Prompt => self.change_wallpaper(selected_prompt.id),
+            SelectedPromptType::Prompt => self.change_wallpaper(selected_prompt.id),
         }
     }
 }
