@@ -1,9 +1,3 @@
-import { z } from "zod";
+import { makeStore } from "./makeStore";
 
-import { makeField, makeStore } from "./makeStore";
-
-export const TempStore = makeStore(".temp.dat", {
-    lastGenerationTimestamp: makeField({
-        schema: z.coerce.date().nullable(),
-    })
-});
+export const TempStore = makeStore(".temp.dat", {});

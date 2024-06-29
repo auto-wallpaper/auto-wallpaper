@@ -17,7 +17,6 @@ use std::{
 use crate::{
     libs::{
         prompt_engine::PromptEngine,
-        store::StoreManager,
         wallpaper_engine::{
             managers::{
                 status::WallpaperEngineStatusManager,
@@ -35,8 +34,11 @@ use crate::{
 };
 
 use chrono::{DateTime, Datelike, Duration, Utc};
+use libs::stores::{
+    temp::TempRepository,
+    user::{Interval, UserRepository},
+};
 use log::{error, info, LevelFilter};
-use serde::Deserialize;
 use serde_json::json;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
@@ -186,75 +188,55 @@ pub fn run() {
                 wallpaper_engine: WallpaperEngine::new(app.app_handle()).into(),
             });
 
-            #[derive(Debug, Deserialize, PartialEq)]
-            #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-            enum Intervals {
-                Off,
-                FiveMins,
-                TenMins,
-                FifteenMins,
-                Thirteens,
-                OneHour,
-                TwoHours,
-                SixHours,
-                TwelveHours,
-                OneDay,
-            }
-
-            fn interval_to_duration(interval: Intervals) -> Duration {
+            fn interval_to_duration(interval: Interval) -> Duration {
                 match interval {
-                    Intervals::Off => Duration::zero(),
-                    Intervals::FiveMins => Duration::minutes(5),
-                    Intervals::TenMins => Duration::minutes(10),
-                    Intervals::FifteenMins => Duration::minutes(15),
-                    Intervals::Thirteens => Duration::minutes(30),
-                    Intervals::OneHour => Duration::hours(1),
-                    Intervals::TwoHours => Duration::hours(2),
-                    Intervals::SixHours => Duration::hours(6),
-                    Intervals::TwelveHours => Duration::hours(12),
-                    Intervals::OneDay => Duration::days(1),
+                    Interval::Off => Duration::zero(),
+                    Interval::FiveMins => Duration::minutes(5),
+                    Interval::TenMins => Duration::minutes(10),
+                    Interval::FifteenMins => Duration::minutes(15),
+                    Interval::Thirteens => Duration::minutes(30),
+                    Interval::OneHour => Duration::hours(1),
+                    Interval::TwoHours => Duration::hours(2),
+                    Interval::SixHours => Duration::hours(6),
+                    Interval::TwelveHours => Duration::hours(12),
+                    Interval::OneDay => Duration::days(1),
                 }
             }
 
             let app_handle = app.app_handle().clone();
 
             tauri::async_runtime::spawn(async move {
-                let temp_store = StoreManager::make_temp_store(&app_handle);
-                let user_store = StoreManager::make_user_store(&app_handle);
+                let user_repository = UserRepository::open(&app_handle);
 
                 loop {
                     sleep(Duration::seconds(1).to_std().unwrap()).await;
 
-                    let interval = match user_store.get::<Intervals>("interval") {
-                        Ok(v) => match v {
-                            Some(v) => v,
-                            None => continue,
-                        },
+                    let interval = match user_repository.get_interval() {
+                        Ok(v) => v,
                         Err(_) => continue,
                     };
 
-                    if interval == Intervals::Off {
+                    if interval == Interval::Off {
                         continue;
                     }
 
-                    let last_generation_timestamp =
-                        match temp_store.get::<String>("lastGenerationTimestamp") {
-                            Ok(v) => match v {
-                                Some(v) => v,
-                                None => continue,
-                            },
-                            Err(_) => continue,
-                        };
+                    let prompts = user_repository
+                        .get_prompts_recently_generated_first()
+                        .unwrap();
 
-                    let last_generation_date =
-                        match last_generation_timestamp.parse::<DateTime<Utc>>() {
-                            Ok(v) => v,
-                            Err(_) => continue,
-                        };
+                    let most_recent_generated_prompt = prompts.get(0).unwrap();
+
+                    let latest_generation_timestamp = match most_recent_generated_prompt
+                        .generated_at
+                        .clone()
+                        .and_then(|v| v.parse::<DateTime<Utc>>().ok())
+                    {
+                        Some(generated_at) => generated_at.timestamp_millis(),
+                        None => continue,
+                    };
 
                     if (Utc::now().timestamp_millis()
-                        - last_generation_date
-                            .timestamp_millis()
+                        - latest_generation_timestamp
                             .add(interval_to_duration(interval).num_milliseconds()))
                         > 0
                     {
@@ -278,16 +260,13 @@ pub fn run() {
                 }
             });
 
-            let mut temp_store = StoreManager::make_temp_store(app.app_handle());
+            let mut temp_repository = TempRepository::open(app.app_handle());
 
-            let last_active_track_event_day = match temp_store.get::<u32>("lastActiveTrackEventDay")
-            {
-                Ok(v) => match v {
-                    Some(v) => v,
-                    None => 0,
-                },
-                Err(_) => 0,
-            };
+            let last_active_track_event_day =
+                match temp_repository.get_last_active_track_event_day() {
+                    Ok(v) => v,
+                    Err(_) => 0,
+                };
 
             let now = Utc::now();
             let day = now.day();
@@ -302,9 +281,7 @@ pub fn run() {
                     })),
                 );
 
-                temp_store
-                    .set("lastActiveTrackEventDay", day.into())
-                    .unwrap();
+                let _ = temp_repository.set_last_active_track_event_day(day);
             };
 
             #[cfg(desktop)]

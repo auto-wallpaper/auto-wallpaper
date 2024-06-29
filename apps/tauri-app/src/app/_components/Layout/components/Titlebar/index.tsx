@@ -11,7 +11,6 @@ import { Button } from "@acme/ui/button";
 import type { WallpaperEngineStatus } from "~/lib/WallpaperGenerator";
 import Spinner from "~/app/_components/Spinner";
 import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
-import { TempStore } from "~/stores/temp";
 import { IntervalsInMinute, UserStore } from "~/stores/user";
 import { calculateRemainingTime } from "~/utils/time";
 
@@ -43,8 +42,16 @@ const Titlebar = () => {
   useEffect(() => {
     const intrvl = setInterval(async () => {
       const interval = await UserStore.interval.get();
-      const lastGenerationTimestamp =
-        await TempStore.lastGenerationTimestamp.get();
+      const prompts = await UserStore.prompts.get();
+      const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
+        if (!a.generatedAt) return 1;
+        if (!b.generatedAt) return -1;
+
+        return b.generatedAt.getTime() - a.generatedAt.getTime();
+      })[0];
+
+      const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
+
       const status = useWallpaperEngineStore.getState().status;
 
       let result: React.ReactNode = null;
