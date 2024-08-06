@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { useElementSize } from "@mantine/hooks";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { primaryMonitor } from "@tauri-apps/api/window";
 import { attachConsole } from "@tauri-apps/plugin-log";
 
 import { ScrollArea } from "@acme/ui/scroll-area";
 
-import { UserStore } from "~/stores/user";
 import { log } from "~/utils/log";
 import Navbar from "./components/Navbar";
 import Titlebar from "./components/Titlebar";
