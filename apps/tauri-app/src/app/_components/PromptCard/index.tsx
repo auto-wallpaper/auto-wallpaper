@@ -8,7 +8,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 import Image from "next/image";
 import {
@@ -20,9 +19,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import Compressor from "compressorjs";
 import { MdOutlineImageNotSupported } from "react-icons/md";
-import { Promisable } from "type-fest";
 
 import type { ClassValue } from "@acme/ui";
 import { cn } from "@acme/ui";
@@ -34,11 +31,7 @@ import {
   TooltipTrigger,
 } from "@acme/ui/tooltip";
 
-import {
-  useWallpaperSourceStore,
-  WallpaperSourceState,
-} from "~/lib/WallpaperFile";
-import { log } from "~/utils/log";
+import type { WallpaperSourceState } from "~/lib/WallpaperFile";
 import Spinner from "../Spinner";
 
 export const VARIABLE_REGEX = /\$([\w_]+)/g;

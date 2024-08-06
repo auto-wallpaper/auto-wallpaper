@@ -1,21 +1,20 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetch } from "@tauri-apps/plugin-http";
 import { IoAdd } from "react-icons/io5";
 
-import type { PromptCardData } from "~/app/_components/PromptCard";
+import type { GalleryPromptData } from "../../types";
 import { ActionButton, PromptCard } from "~/app/_components/PromptCard";
 import Spinner from "~/app/_components/Spinner";
-import {
-  useWallpaperSource,
-  useWallpaperSourceStore,
-} from "~/lib/WallpaperFile";
+import { useWallpaperSourceStore } from "~/lib/WallpaperFile";
 import { UserStore } from "~/stores/user";
 import { saveWallpaperFiles } from "~/utils/wallpapers";
 
-export type CardProps = Omit<PromptCardData, "source">;
+export type CardProps = {
+  prompt: GalleryPromptData;
+};
 
-const Card: React.FC<CardProps> = ({ id, prompt }) => {
+const Card: React.FC<CardProps> = ({ prompt: { id, prompt, upscale } }) => {
   const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
 
@@ -26,7 +25,7 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
 
   useEffect(() => {
     void load(id, imageSrc);
-  }, [load]);
+  }, [id, imageSrc, load]);
 
   return (
     <PromptCard
@@ -43,6 +42,7 @@ const Card: React.FC<CardProps> = ({ id, prompt }) => {
                 ...prev,
                 {
                   prompt,
+                  upscale,
                 },
               ]);
 

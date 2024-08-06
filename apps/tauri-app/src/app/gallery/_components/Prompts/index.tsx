@@ -7,19 +7,15 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { error } from "@tauri-apps/plugin-log";
 import { compare } from "compare-versions";
 
+import type { GalleryPromptData, GalleryPromptsData } from "./types";
 import { PromptsGrid } from "~/app/_components/PromptCard";
 import Card from "./components/Card";
-
-type PromptsData = {
-  prompts: { id: string; prompt: string }[];
-  minVersion: string;
-};
 
 const Prompts: React.FC = () => {
   const [status, setStatus] = useState<
     "loading" | "deprecated" | "success" | "error"
   >("loading");
-  const [prompts, setPrompts] = useState<PromptsData["prompts"]>([]);
+  const [prompts, setPrompts] = useState<GalleryPromptData[]>([]);
 
   useEffect(() => {
     const handler = async () => {
@@ -35,7 +31,7 @@ const Prompts: React.FC = () => {
         return;
       }
 
-      const data = (await resp.json()) as PromptsData;
+      const data = (await resp.json()) as GalleryPromptsData;
 
       setStatus(
         compare(await getVersion(), data.minVersion, ">=")
@@ -85,8 +81,8 @@ const Prompts: React.FC = () => {
 
   return (
     <PromptsGrid sortable={false}>
-      {prompts.map(({ id, prompt }) => (
-        <Card key={id} id={id} prompt={prompt} />
+      {prompts.map((prompt) => (
+        <Card key={prompt.id} prompt={prompt} />
       ))}
     </PromptsGrid>
   );
