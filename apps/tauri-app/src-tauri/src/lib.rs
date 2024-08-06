@@ -143,7 +143,7 @@ pub fn run() {
         .setup(|app| {
             let open = MenuItemBuilder::with_id("open", "Open Auto Wallpaper").build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let menu = MenuBuilder::new(app).items(&[&quit, &open]).build()?;
+            let menu = MenuBuilder::new(app).items(&[&open, &quit]).build()?;
 
             let tray = app.tray_by_id("main").unwrap();
 
