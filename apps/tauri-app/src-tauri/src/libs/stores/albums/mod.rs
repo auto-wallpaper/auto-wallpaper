@@ -41,7 +41,7 @@ impl AlbumsRepository {
     fn get_albums(&self) -> Result<Vec<Album>> {
         let result = self
             .store
-            .query(|store| Ok(store.get("albums".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("albums".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<Vec<Album>>(data)?),
@@ -82,10 +82,10 @@ impl AlbumsRepository {
 
         prompts.sort_by(|a, b| {
             if a.generated_at.is_none() {
-                return Ordering::Less;
+                return Ordering::Greater;
             };
             if b.generated_at.is_none() {
-                return Ordering::Greater;
+                return Ordering::Less;
             };
 
             let offset = DateTime::parse_from_rfc3339(&b.generated_at.clone().unwrap())
@@ -100,17 +100,17 @@ impl AlbumsRepository {
             }
 
             if offset > 0 {
-                return Ordering::Less;
+                return Ordering::Greater;
             }
 
-            Ordering::Greater
+            Ordering::Less
         });
 
         Ok(prompts)
     }
 
     pub fn get_the_chosen_prompt_of_album(&self, album_id: String) -> Result<String> {
-        let chosen_album = self.get_album_by_id(album_id)?;
+        let chosen_album = self.get_album_by_id(album_id.clone())?;
 
         let chosen_prompt_id = match chosen_album.selection_type {
             AlbumSelectionType::Random => chosen_album
@@ -119,40 +119,8 @@ impl AlbumsRepository {
                 .unwrap()
                 .clone(),
             AlbumSelectionType::Sequential => {
-                let prompts = self.user_repository.get_prompts()?;
-
-                let mut prompts_of_album = prompts
-                    .into_iter()
-                    .filter(|prompt| chosen_album.prompts.contains(&prompt.id))
-                    .collect::<Vec<Prompt>>();
-
-                prompts_of_album.sort_by(|a, b| {
-                    if a.generated_at.is_none() {
-                        return Ordering::Greater;
-                    };
-                    if b.generated_at.is_none() {
-                        return Ordering::Less;
-                    };
-
-                    let offset = DateTime::parse_from_rfc3339(&b.generated_at.clone().unwrap())
-                        .unwrap()
-                        .timestamp()
-                        - DateTime::parse_from_rfc3339(&a.generated_at.clone().unwrap())
-                            .unwrap()
-                            .timestamp();
-
-                    if offset == 0 {
-                        return Ordering::Equal;
-                    }
-
-                    if offset > 0 {
-                        return Ordering::Greater;
-                    }
-
-                    Ordering::Less
-                });
-
-                let most_recent_generated_prompt = prompts_of_album.get(0).unwrap();
+                let prompts = self.get_prompts_recently_generated_first(album_id)?;
+                let most_recent_generated_prompt = prompts.first().unwrap();
 
                 let index = if let Some(index) = chosen_album
                     .prompts

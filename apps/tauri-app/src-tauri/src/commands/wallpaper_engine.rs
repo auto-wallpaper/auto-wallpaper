@@ -1,137 +1,60 @@
-use log::{error, info};
 use tauri::State;
 
 use crate::{
-    libs::wallpaper_engine::{
-        managers::status::WallpaperEngineStatus,
-        structs::{UsingPrompt, WallpaperEngineError},
-    },
-    states::wallpaper_engine::{
-        WallpaperEngineStatusStore, WallpaperEngineStore, WallpaperEngineUsingPromptStore,
-    },
+    libs::app_wallpaper_engine::{handle_result, status_manager, using_prompt_manager},
+    states::wallpaper_engine::AppWallpaperEngineStore,
 };
 
 #[tauri::command]
 pub async fn generate_selected_prompt(
-    wallpaper_engine_store: State<'_, WallpaperEngineStore>,
+    app_wallpaper_engine_store: State<'_, AppWallpaperEngineStore>,
 ) -> Result<(), String> {
-    match wallpaper_engine_store
-        .wallpaper_engine
-        .lock()
-        .await
-        .generate_selected_prompt()
-        .await
-    {
-        Ok(_) => {
-            info!("mission completed!");
-        }
-        Err(error) => {
-            match error {
-                WallpaperEngineError::Canceled => info!("Wallpaper generation has been canceled"),
-                WallpaperEngineError::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
-                _ => {
-                    error!("Error: {:?}", error);
-                    return Err(format!("{:?}", error));        
-                }
-            };
-        }
-    }
-
-    Ok(())
+    handle_result(app_wallpaper_engine_store.generate_selected_prompt().await)
 }
 
 #[tauri::command]
 pub async fn generate_by_prompt_id(
-    wallpaper_engine_store: State<'_, WallpaperEngineStore>,
+    wallpaper_engine_store: State<'_, AppWallpaperEngineStore>,
     prompt_id: String,
 ) -> Result<(), String> {
-    match wallpaper_engine_store
-        .wallpaper_engine
-        .lock()
-        .await
-        .generate_by_id(&prompt_id, None)
-        .await
-    {
-        Ok(_) => {
-            info!("mission completed!");
-        }
-        Err(error) => {
-            match error {
-                    WallpaperEngineError::Canceled => info!("Wallpaper generation has been canceled"),
-                    WallpaperEngineError::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
-                    _ => {
-                        error!("Error: {:?}", error);
-                        return Err(format!("{:?}", error));        
-                    }
-                };
-        }
-    }
-
-    Ok(())
+    handle_result(
+        wallpaper_engine_store
+            .generate_by_prompt_id(prompt_id)
+            .await,
+    )
 }
 
 #[tauri::command]
 pub async fn generate_by_album_id(
-    wallpaper_engine_store: State<'_, WallpaperEngineStore>,
+    wallpaper_engine_store: State<'_, AppWallpaperEngineStore>,
     album_id: String,
 ) -> Result<(), String> {
-    match wallpaper_engine_store
-        .wallpaper_engine
-        .lock()
-        .await
-        .generate_by_album_id(album_id)
-        .await
-    {
-        Ok(_) => {
-            info!("mission completed!");
-        }
-        Err(error) => {
-            match error {
-                    WallpaperEngineError::Canceled => info!("Wallpaper generation has been canceled"),
-                    WallpaperEngineError::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
-                    _ => {
-                        error!("Error: {:?}", error);
-                        return Err(format!("{:?}", error));        
-                    }
-                };
-        }
-    }
-
-    Ok(())
+    handle_result(wallpaper_engine_store.generate_by_album_id(album_id).await)
 }
 
 #[tauri::command]
 pub async fn get_using_prompt(
-    wallpaper_engine_store: State<'_, WallpaperEngineUsingPromptStore>,
-) -> Result<Option<UsingPrompt>, String> {
-    let using_prompt = wallpaper_engine_store.using_prompt.lock().await.get();
+    using_prompt_store: State<'_, using_prompt_manager::Store>,
+) -> Result<Option<using_prompt_manager::UsingPrompt>, String> {
+    let using_prompt = using_prompt_store.lock().await.get();
 
     Ok(using_prompt)
 }
 
 #[tauri::command]
 pub async fn get_status(
-    wallpaper_engine_store: State<'_, WallpaperEngineStatusStore>,
-) -> Result<WallpaperEngineStatus, String> {
-    let status = wallpaper_engine_store.status.lock().await.get();
+    status_manager_store: State<'_, status_manager::Store>,
+) -> Result<status_manager::Status, String> {
+    let status = status_manager_store.lock().await.get();
 
     Ok(status)
 }
 
 #[tauri::command]
 pub async fn cancel(
-    wallpaper_engine_store: State<'_, WallpaperEngineStatusStore>,
+    wallpaper_engine_store: State<'_, AppWallpaperEngineStore>,
 ) -> Result<(), String> {
-    match wallpaper_engine_store
-        .status
-        .lock()
-        .await
-        .set(WallpaperEngineStatus::Canceling)
-    {
-        Ok(result) => Ok(result),
-        Err(e) => {
-            error!("Error: {:?}", e);
-            Err(format!("{:?}", e))
-        }
-    }
+    wallpaper_engine_store.cancel().await;
+
+    Ok(())
 }

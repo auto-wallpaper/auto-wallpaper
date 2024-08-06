@@ -87,7 +87,7 @@ impl UserRepository {
     pub fn get_selected_prompt(&self) -> Result<SelectedPrompt> {
         let result = self
             .store
-            .query(|store| Ok(store.get("selectedPrompt".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("selectedPrompt".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<SelectedPrompt>(data)?),
@@ -98,7 +98,7 @@ impl UserRepository {
     pub fn get_prompts(&self) -> Result<Vec<Prompt>> {
         let result = self
             .store
-            .query(|store| Ok(store.get("prompts".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("prompts".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<Vec<Prompt>>(data)?),
@@ -109,7 +109,7 @@ impl UserRepository {
     pub fn get_location(&self) -> Result<Location> {
         let result = self
             .store
-            .query(|store| Ok(store.get("location".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("location".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<Location>(data)?),
@@ -118,13 +118,13 @@ impl UserRepository {
     }
 
     pub fn update_prompt_generated_at_field(
-        &mut self,
+        &self,
         prompt_id: String,
     ) -> Result<DelayedFormat<StrftimeItems>> {
         let prompts = self.get_prompts()?;
         let now = Utc::now().format("%Y-%m-%dT%H:%M:%S.%fZ");
 
-        let _ = self.store.mutate(|store| {
+        let _ = self.store.run(|store| {
             store.insert(
                 "prompts".into(),
                 json!(prompts
@@ -149,21 +149,10 @@ impl UserRepository {
         Ok(now)
     }
 
-    pub fn get_screen_size(&self) -> Result<ScreenSize> {
-        let result = self
-            .store
-            .query(|store| Ok(store.get("screenSize".to_string()).cloned()))?;
-
-        match result {
-            Some(data) => Ok(serde_json::from_value::<ScreenSize>(data)?),
-            None => Ok(ScreenSize { x: 1, y: 1 }),
-        }
-    }
-
     pub fn get_interval(&self) -> Result<Interval> {
         let result = self
             .store
-            .query(|store| Ok(store.get("interval".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("interval".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<Interval>(data)?),
@@ -176,10 +165,10 @@ impl UserRepository {
 
         prompts.sort_by(|a, b| {
             if a.generated_at.is_none() {
-                return Ordering::Less;
+                return Ordering::Greater;
             };
             if b.generated_at.is_none() {
-                return Ordering::Greater;
+                return Ordering::Less;
             };
 
             let offset = DateTime::parse_from_rfc3339(&b.generated_at.clone().unwrap())
@@ -194,10 +183,10 @@ impl UserRepository {
             }
 
             if offset > 0 {
-                return Ordering::Less;
+                return Ordering::Greater;
             }
 
-            Ordering::Greater
+            Ordering::Less
         });
 
         Ok(prompts)

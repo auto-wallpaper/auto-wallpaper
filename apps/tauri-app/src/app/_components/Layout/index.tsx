@@ -29,7 +29,7 @@ void attachConsole();
 const queryClient = new QueryClient();
 
 const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const { ref: viewportRef, height } = useElementSize<HTMLDivElement>();
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.location.hostname !== "tauri.localhost") {
@@ -50,21 +50,6 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
     };
   }, []);
 
-  useEffect(() => {
-    const handler = async () => {
-      const monitor = await primaryMonitor();
-
-      if (!monitor) return;
-
-      await UserStore.screenSize.set({
-        x: monitor.size.width,
-        y: monitor.size.height,
-      });
-    };
-
-    void handler();
-  }, []);
-
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,9 +61,16 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
         viewportRef.current?.clientHeight ?? 0
       }px`;
     };
+
     listener();
+
     window.addEventListener("resize", listener);
     window.addEventListener("orientationchange", listener);
+
+    return () => {
+      window.removeEventListener("resize", listener);
+      window.removeEventListener("orientationchange", listener);
+    };
   }, []);
 
   return (

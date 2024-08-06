@@ -1,38 +1,32 @@
 use rand::seq::SliceRandom;
-use regex::Regex;
-use reqwest::{Client, Error};
+use reqwest::Client;
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::utils::build_http_client;
+
+use super::base::{EmailProvider, Result};
 const DOMAINS: [&str; 2] = ["rteet.com", "dpptd.com"];
 
-pub struct OneSecmail {
+#[derive(Debug, Clone)]
+pub struct OneSecMailProvider {
     client: Client,
     email: Option<String>,
     login: Option<String>,
     domain: Option<String>,
 }
 
-impl OneSecmail {
-    pub fn new() -> Result<Self, Error> {
-        let client = Client::builder()
-            .cookie_store(true)
-            .timeout(std::time::Duration::from_secs(30))
-            .build()?;
-
+impl EmailProvider for OneSecMailProvider {
+    fn new() -> Result<Self> {
         Ok(Self {
-            client,
+            client: build_http_client()?,
             email: None,
             login: None,
             domain: None,
         })
     }
 
-    pub fn get_email(&self) -> String {
-        self.email.clone().unwrap()
-    }
-
-    pub async fn init(&mut self) -> Result<(), Error> {
+    async fn init(&mut self) -> () {
         let domain = DOMAINS.choose(&mut rand::thread_rng()).unwrap().to_string();
         let login = Uuid::new_v4().to_string();
 
@@ -40,11 +34,18 @@ impl OneSecmail {
 
         self.domain = Some(domain);
         self.login = Some(login);
-
-        Ok(())
     }
 
-    async fn get_last_message_id(&mut self) -> Result<Option<u32>, Error> {
+    fn get_email(&self) -> String {
+        self.email.clone().unwrap()
+    }
+
+    async fn get_last_message_body(&self) -> Result<Option<String>> {
+        #[derive(Debug, Deserialize)]
+        struct MessageResponse {
+            body: String,
+        }
+
         #[derive(Debug, Deserialize)]
         struct Message {
             id: u32,
@@ -62,23 +63,8 @@ impl OneSecmail {
             .json::<Vec<Message>>()
             .await?;
 
-        let last = match response.get(0) {
+        let last = match response.last() {
             Some(message) => message,
-            None => return Ok(None),
-        };
-
-        Ok(Some(last.id.clone()))
-    }
-
-    pub async fn lookup_confirmation_code(&mut self) -> Result<Option<String>, Error> {
-        #[derive(Debug, Deserialize)]
-        struct MessageResponse {
-            #[serde(rename = "body")]
-            body: String,
-        }
-
-        let message_id = match self.get_last_message_id().await? {
-            Some(id) => id,
             None => return Ok(None),
         };
 
@@ -88,21 +74,13 @@ impl OneSecmail {
                 "https://www.1secmail.com/api/v1/?action=readMessage&login={}&domain={}&id={}",
                 self.login.clone().unwrap(),
                 self.domain.clone().unwrap(),
-                message_id
+                last.id
             ))
             .send()
             .await?
             .json::<MessageResponse>()
             .await?;
 
-        let code_regex = Regex::new(r"\d{6}").expect("invalid regex");
-
-        Ok(Some(
-            code_regex
-                .find(&response.body)
-                .unwrap()
-                .as_str()
-                .to_string(),
-        ))
+        Ok(Some(response.body))
     }
 }

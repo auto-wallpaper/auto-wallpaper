@@ -1,7 +1,9 @@
-use reqwest::{header, Client, Error};
+use reqwest::{header, Client};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+
+use crate::utils::build_http_client;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -48,40 +50,35 @@ pub struct GraphqlError {
 }
 
 #[derive(Debug)]
-pub enum GraphqlRequestError {
+pub enum Error {
+    HttpError(reqwest::Error),
+    GraphQLError(GraphqlError),
     UnexpectedResponseFormat,
-    GraphqlError(GraphqlError),
-    NetworkError(reqwest::Error),
 }
 
-impl From<reqwest::Error> for GraphqlRequestError {
+type Result<T> = std::result::Result<T, Error>;
+
+impl From<reqwest::Error> for Error {
     fn from(err: reqwest::Error) -> Self {
-        GraphqlRequestError::NetworkError(err)
+        Error::HttpError(err)
     }
 }
 
-#[derive(std::default::Default)]
-pub struct Leonardo {
+#[derive(Debug, std::default::Default)]
+pub struct LeonardoApi {
     client: Client,
     user_id: Option<String>,
 }
 
-impl Leonardo {
-    pub fn new() -> Result<Self, Error> {
+impl LeonardoApi {
+    pub fn new() -> Result<Self> {
         Ok(Self {
-            client: Leonardo::build_http_client()?,
+            client: build_http_client()?,
             user_id: None,
         })
     }
 
-    fn build_http_client() -> reqwest::Result<Client> {
-        Client::builder()
-            .cookie_store(true)
-            .timeout(std::time::Duration::from_secs(30))
-            .build()
-    }
-
-    pub async fn signup(&mut self, email: String, password: &str) -> Result<SignupResponse, Error> {
+    pub async fn signup(&mut self, email: String, password: &str) -> Result<SignupResponse> {
         let response = self
             .client
             .post("https://app.leonardo.ai/api/auth/signup")
@@ -99,7 +96,7 @@ impl Leonardo {
         email: String,
         password: &str,
         confirmation_code: String,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         self.client
             .post("https://app.leonardo.ai/api/auth/confirm-signup")
             .json(&json!({
@@ -113,7 +110,7 @@ impl Leonardo {
         Ok(())
     }
 
-    async fn get_csrf(&self) -> Result<String, Error> {
+    async fn get_csrf(&self) -> Result<String> {
         #[derive(Debug, Deserialize)]
         #[serde(deny_unknown_fields, rename_all = "camelCase")]
         struct CsrfResponse {
@@ -131,7 +128,7 @@ impl Leonardo {
         Ok(csrf_response.csrf_token)
     }
 
-    pub async fn login(&mut self, username: String, password: &str) -> Result<(), Error> {
+    pub async fn login(&mut self, username: String, password: &str) -> Result<()> {
         let csrf_token = self.get_csrf().await?;
 
         self.client
@@ -152,7 +149,7 @@ impl Leonardo {
         Ok(())
     }
 
-    async fn get_session(&mut self) -> Result<String, Error> {
+    async fn get_session(&mut self) -> Result<String> {
         #[derive(Debug, Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct GetSessionResponse {
@@ -177,7 +174,7 @@ impl Leonardo {
         operation_name: &str,
         query: &str,
         variables: Option<U>,
-    ) -> Result<T, GraphqlRequestError>
+    ) -> Result<T>
     where
         T: DeserializeOwned,
         U: Serialize,
@@ -212,16 +209,14 @@ impl Leonardo {
             GraphQLResponse {
                 data: None,
                 errors: Some(errors),
-            } => Err(GraphqlRequestError::GraphqlError(
-                errors.get(0).unwrap().clone(),
-            )),
-            _ => Err(GraphqlRequestError::UnexpectedResponseFormat),
+            } => Err(Error::GraphQLError(errors.get(0).unwrap().clone())),
+            _ => Err(Error::UnexpectedResponseFormat),
         };
 
         result
     }
 
-    pub async fn update_username(&mut self, username: String) -> Result<(), GraphqlRequestError> {
+    pub async fn update_username(&mut self, username: String) -> Result<()> {
         #[derive(Debug, Deserialize)]
         struct ResponseUpdateUsername {
             id: String,
@@ -259,7 +254,7 @@ impl Leonardo {
         Ok(())
     }
 
-    pub async fn update_user_details(&mut self) -> Result<(), GraphqlRequestError> {
+    pub async fn update_user_details(&mut self) -> Result<()> {
         let query = "
             mutation UpdateUserDetails(
                 $where: user_details_bool_exp!
@@ -292,7 +287,7 @@ impl Leonardo {
         Ok(())
     }
 
-    pub async fn start_user_alchemy_trial(&mut self) -> Result<(), GraphqlRequestError> {
+    pub async fn start_user_alchemy_trial(&mut self) -> Result<()> {
         let query = "
             mutation StartUserAlchemyTrial {
                 startUserAlchemyTrial {
@@ -316,7 +311,7 @@ impl Leonardo {
         num_images: u8,
         width: u32,
         height: u32,
-    ) -> Result<String, GraphqlRequestError> {
+    ) -> Result<String> {
         #[derive(Debug, Deserialize)]
         #[serde(deny_unknown_fields, rename_all = "camelCase")]
         struct SdGenerationJobData {
@@ -382,7 +377,7 @@ impl Leonardo {
     pub async fn get_ai_generation_job(
         &mut self,
         generation_id: String,
-    ) -> Result<GetAIGenerationFeedResponse, GraphqlRequestError> {
+    ) -> Result<GetAIGenerationFeedResponse> {
         let query = "
             query GetAIGenerationFeed(
                 $where: generations_bool_exp = {}
@@ -437,7 +432,7 @@ impl Leonardo {
         Ok(result)
     }
 
-    pub async fn delete_account(&mut self) -> Result<(), GraphqlRequestError> {
+    pub async fn delete_account(&mut self) -> Result<()> {
         if self.user_id.is_none() {
             return Ok(());
         }
@@ -464,7 +459,7 @@ impl Leonardo {
             .await?;
 
         self.user_id = None;
-        self.client = Leonardo::build_http_client()?;
+        self.client = build_http_client()?;
 
         Ok(())
     }
@@ -474,7 +469,7 @@ impl Leonardo {
         generated_image_id: String,
         creativity_strength: u8,
         style: String,
-    ) -> Result<String, GraphqlRequestError> {
+    ) -> Result<String> {
         #[derive(Debug, Deserialize)]
         #[serde(deny_unknown_fields, rename_all = "camelCase")]
         struct UniversalUpscalerJobData {
@@ -514,10 +509,7 @@ impl Leonardo {
         Ok(result.universal_upscaler.generation_id)
     }
 
-    pub async fn get_image_variation_by_fk(
-        &mut self,
-        id: String,
-    ) -> Result<GetImageVariationData, GraphqlRequestError> {
+    pub async fn get_image_variation_by_fk(&mut self, id: String) -> Result<GetImageVariationData> {
         #[derive(Debug, Deserialize)]
         #[serde(deny_unknown_fields)]
         struct GetImageVariationResponse {

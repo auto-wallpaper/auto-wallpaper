@@ -9,17 +9,19 @@ use super::stores::{
 };
 
 #[derive(Debug)]
-pub enum DeviceWallpaperError {
+pub enum Error {
     WallpaperNotFound,
     WallpaperChangeError,
     RepositoryError(base::Error),
 }
 
-impl From<base::Error> for DeviceWallpaperError {
+impl From<base::Error> for Error {
     fn from(err: base::Error) -> Self {
-        DeviceWallpaperError::RepositoryError(err)
+        Error::RepositoryError(err)
     }
 }
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct DeviceWallpaper {
     user_repository: UserRepository,
@@ -36,7 +38,7 @@ impl DeviceWallpaper {
         }
     }
 
-    pub fn change_wallpaper(&self, prompt_id: String) -> Result<(), DeviceWallpaperError> {
+    pub fn change_wallpaper(&self, prompt_id: String) -> Result<()> {
         let app_data_dir = self.app_handle.path().app_data_dir().unwrap();
         let prompt_dir = append_to_path(&app_data_dir, &format!("/{}", prompt_id));
 
@@ -44,13 +46,13 @@ impl DeviceWallpaper {
 
         if image_path.exists() {
             return wallpaper::set_from_path(image_path.to_str().unwrap())
-                .or(Err(DeviceWallpaperError::WallpaperChangeError));
+                .or(Err(Error::WallpaperChangeError));
         }
 
-        Err(DeviceWallpaperError::WallpaperNotFound)
+        Err(Error::WallpaperNotFound)
     }
 
-    pub fn refresh_wallpaper(&self) -> Result<(), DeviceWallpaperError> {
+    pub fn refresh_wallpaper(&self) -> Result<()> {
         let selected_prompt = self.user_repository.get_selected_prompt()?;
 
         match selected_prompt.prompt_type {
@@ -59,7 +61,7 @@ impl DeviceWallpaper {
                     .albums_repository
                     .get_prompts_recently_generated_first(selected_prompt.id)?;
 
-                let chosen_prompt = prompts.last().unwrap();
+                let chosen_prompt = prompts.first().unwrap();
 
                 self.change_wallpaper(chosen_prompt.id.to_string())
             }
