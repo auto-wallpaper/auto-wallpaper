@@ -2,7 +2,7 @@ pub mod status_manager;
 pub mod using_prompt_manager;
 mod utils;
 
-use log::error;
+use log::{error, info};
 use serde::Serialize;
 use status_manager::Status;
 use tauri::{Manager, PhysicalSize};
@@ -304,4 +304,26 @@ impl AppWallpaperEngine {
 
         Ok(())
     }
+}
+
+
+
+pub fn handle_result(result: Result<()>) -> std::result::Result<(), String> {
+    match result {
+        Ok(_) => {
+            info!("Wallpaper has been generated successfully");
+        }
+        Err(error) => {
+            match error {
+                Error::Cancelled => info!("Wallpaper generation has been canceled"),
+                Error::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
+                _ => {
+                    error!("Error: {:?}", error);
+                    return Err(format!("{:?}", error));        
+                }
+            };
+        }
+    }
+
+    Ok(())
 }

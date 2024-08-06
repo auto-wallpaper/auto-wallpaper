@@ -21,7 +21,7 @@ use crate::{
 
 use chrono::{DateTime, Datelike, Duration, Utc};
 use libs::{
-    app_wallpaper_engine::{status_manager, using_prompt_manager},
+    app_wallpaper_engine::{self, status_manager, using_prompt_manager},
     stores::{
         temp::TempRepository,
         user::{Interval, UserRepository},
@@ -227,19 +227,13 @@ pub fn run() {
                             .add(interval_to_duration(interval).num_milliseconds()))
                         > 0
                     {
-                        match app_handle
-                            .clone()
-                            .state::<AppWallpaperEngineStore>()
-                            .generate_selected_prompt()
-                            .await
-                        {
-                            Ok(_) => {
-                                info!("mission completed!");
-                            }
-                            Err(e) => {
-                                error!("Error: {:?}", e);
-                            }
-                        }
+                        let _ = app_wallpaper_engine::handle_result(
+                            app_handle
+                                .clone()
+                                .state::<AppWallpaperEngineStore>()
+                                .generate_selected_prompt()
+                                .await,
+                        );
                     };
                 }
             });

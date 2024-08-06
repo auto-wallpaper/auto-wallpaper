@@ -1,30 +1,9 @@
-use log::{error, info};
 use tauri::State;
 
 use crate::{
-    libs::app_wallpaper_engine::{self, status_manager, using_prompt_manager},
+    libs::app_wallpaper_engine::{handle_result, status_manager, using_prompt_manager},
     states::wallpaper_engine::AppWallpaperEngineStore,
 };
-
-fn handle_result(result: app_wallpaper_engine::Result<()>) -> Result<(), String> {
-    match result {
-        Ok(_) => {
-            info!("Wallpaper has been generated successfully");
-        }
-        Err(error) => {
-            match error {
-                app_wallpaper_engine::Error::Cancelled => info!("Wallpaper generation has been canceled"),
-                app_wallpaper_engine::Error::MoreThanOneGenerationAtOnceError => info!("Wallpaper generation didn't start. Cannot generate more than 1 wallpaper at once"),
-                _ => {
-                    error!("Error: {:?}", error);
-                    return Err(format!("{:?}", error));        
-                }
-            };
-        }
-    }
-
-    Ok(())
-}
 
 #[tauri::command]
 pub async fn generate_selected_prompt(
