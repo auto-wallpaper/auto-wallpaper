@@ -34,7 +34,7 @@ const Actions: React.FC<ActionsProps> = ({ hasImage }) => {
       <AlbumAction />
       {isThisGenerating && (
         <ActionButton
-          Icon={status === "CANCELING" ? Spinner : SpinningStopIcon}
+          Icon={status === "CANCELLING" ? Spinner : SpinningStopIcon}
           onClick={() => cancel()}
         />
       )}

@@ -37,96 +37,92 @@ const Titlebar = () => {
     };
   }, []);
 
-  const [status, setStatus] = useState<React.ReactNode>(null);
+  const [statusText, setStatusText] = useState<React.ReactNode>(null);
+
+  const interval = UserStore.interval.useValue();
+  const prompts = UserStore.prompts.useValue();
+  const status = useWallpaperEngineStore((state) => state.status);
 
   useEffect(() => {
-    const intrvl = setInterval(async () => {
-      const interval = await UserStore.interval.get();
-      const prompts = await UserStore.prompts.get();
-      const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
-        if (!a.generatedAt) return 1;
-        if (!b.generatedAt) return -1;
+    if (!interval || !prompts) return;
 
-        return b.generatedAt.getTime() - a.generatedAt.getTime();
-      })[0];
+    const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
+      if (!a.generatedAt) return 1;
+      if (!b.generatedAt) return -1;
 
-      const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
+      return b.generatedAt.getTime() - a.generatedAt.getTime();
+    })[0];
 
-      const status = useWallpaperEngineStore.getState().status;
+    const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
 
-      let result: React.ReactNode = null;
+    let result: React.ReactNode = null;
 
-      const withSpinnersMap = {
-        INITIALIZING: "Initializing",
-        GENERATING_IMAGE: "Generating Wallpaper",
-        UPSCALING: "Upscaling the Wallpaper",
-        FINALIZING: "Finalizing",
-        CANCELING: "Canceling",
-      } satisfies Partial<Record<WallpaperEngineStatus, string>>;
+    const withSpinnersMap = {
+      INITIALIZING: "Initializing",
+      GENERATING: "Generating Wallpaper",
+      UPSCALING: "Upscaling the Wallpaper",
+      FINALIZING: "Finalizing",
+      CANCELLING: "Cancelling",
+    } satisfies Partial<Record<WallpaperEngineStatus, string>>;
 
-      switch (status) {
-        case "INITIALIZING":
-        case "GENERATING_IMAGE":
-        case "UPSCALING":
-        case "FINALIZING":
-        case "CANCELING":
+    switch (status) {
+      case "INITIALIZING":
+      case "GENERATING":
+      case "UPSCALING":
+      case "FINALIZING":
+      case "CANCELLING":
+        result = (
+          <>
+            <Spinner /> {withSpinnersMap[status]}
+          </>
+        );
+        break;
+      case "IDLE": {
+        if (interval === "OFF") {
+          result = <>Idle</>;
+          break;
+        }
+
+        if (!lastGenerationTimestamp) {
           result = (
             <>
-              <Spinner /> {withSpinnersMap[status]}
+              You have not generated anything yet. generate one using the{" "}
+              <LuRefreshCcw /> button
             </>
           );
           break;
-        case "IDLE": {
-          if (interval === "OFF") {
-            result = <>Idle</>;
-            break;
-          }
+        }
 
-          if (!lastGenerationTimestamp) {
-            result = (
-              <>
-                You have not generated anything yet. generate one using the{" "}
-                <LuRefreshCcw /> button
-              </>
-            );
-            break;
-          }
+        const leftSeconds =
+          lastGenerationTimestamp.getTime() +
+          IntervalsInMinute[interval] * 60_000 -
+          Date.now();
 
-          const leftSeconds =
-            lastGenerationTimestamp.getTime() +
-            IntervalsInMinute[interval] * 60_000 -
-            Date.now();
-
-          if (leftSeconds <= 0) {
-            result = (
-              <>
-                <Spinner />
-              </>
-            );
-            break;
-          }
-
+        if (leftSeconds <= 0) {
           result = (
             <>
-              Wallpaper generation will begin{" "}
-              {calculateRemainingTime(
-                new Date(
-                  lastGenerationTimestamp.getTime() +
-                    IntervalsInMinute[interval] * 60_000,
-                ),
-              )}
+              <Spinner />
             </>
           );
+          break;
         }
+
+        result = (
+          <>
+            Wallpaper generation will begin{" "}
+            {calculateRemainingTime(
+              new Date(
+                lastGenerationTimestamp.getTime() +
+                  IntervalsInMinute[interval] * 60_000,
+              ),
+            )}
+          </>
+        );
       }
+    }
 
-      setStatus(result);
-    }, 1000);
-
-    return () => {
-      clearInterval(intrvl);
-    };
-  }, []);
+    setStatusText(result);
+  }, [interval, prompts, status]);
 
   return (
     <div className="flex w-full bg-transparent">
@@ -138,7 +134,7 @@ const Titlebar = () => {
             await appWindow?.startDragging();
           }}
         >
-          {status}
+          {statusText}
         </div>
       </div>
       <div className="ml-auto flex">

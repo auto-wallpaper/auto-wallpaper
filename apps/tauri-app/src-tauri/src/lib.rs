@@ -15,28 +15,17 @@ use std::{
 };
 
 use crate::{
-    libs::{
-        prompt_engine::PromptEngine,
-        wallpaper_engine::{
-            managers::{
-                status::WallpaperEngineStatusManager,
-                using_prompt::WallpaperEngineUsingPromptManager,
-            },
-            WallpaperEngine,
-        },
-    },
-    states::{
-        prompt_engine::PromptEngineStore,
-        wallpaper_engine::{
-            WallpaperEngineStatusStore, WallpaperEngineStore, WallpaperEngineUsingPromptStore,
-        },
-    },
+    libs::prompt_engine::PromptEngine,
+    states::{prompt_engine::PromptEngineStore, wallpaper_engine::AppWallpaperEngineStore},
 };
 
 use chrono::{DateTime, Datelike, Duration, Utc};
-use libs::stores::{
-    temp::TempRepository,
-    user::{Interval, UserRepository},
+use libs::{
+    app_wallpaper_engine::{status_manager, using_prompt_manager},
+    stores::{
+        temp::TempRepository,
+        user::{Interval, UserRepository},
+    },
 };
 use log::{error, info, LevelFilter};
 use serde_json::json;
@@ -178,15 +167,13 @@ pub fn run() {
             app.manage(PromptEngineStore {
                 prompt_engine: PromptEngine::new(app.app_handle()).into(),
             });
-            app.manage(WallpaperEngineStatusStore {
-                status: WallpaperEngineStatusManager::new(app.app_handle()).into(),
-            });
-            app.manage(WallpaperEngineUsingPromptStore {
-                using_prompt: WallpaperEngineUsingPromptManager::new(app.app_handle()).into(),
-            });
-            app.manage(WallpaperEngineStore {
-                wallpaper_engine: WallpaperEngine::new(app.app_handle()).into(),
-            });
+            app.manage(status_manager::Store::new(
+                status_manager::StatusManager::new(app.app_handle()),
+            ));
+            app.manage(using_prompt_manager::Store::new(
+                using_prompt_manager::UsingPromptManager::new(app.app_handle()),
+            ));
+            app.manage(AppWallpaperEngineStore::new(app.app_handle()));
 
             fn interval_to_duration(interval: Interval) -> Duration {
                 match interval {
@@ -240,12 +227,9 @@ pub fn run() {
                             .add(interval_to_duration(interval).num_milliseconds()))
                         > 0
                     {
-                        match &app_handle
+                        match app_handle
                             .clone()
-                            .state::<WallpaperEngineStore>()
-                            .wallpaper_engine
-                            .lock()
-                            .await
+                            .state::<AppWallpaperEngineStore>()
                             .generate_selected_prompt()
                             .await
                         {

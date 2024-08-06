@@ -49,7 +49,7 @@ const DeleteAction: React.FC<DeleteActionProps> = ({ disabled }) => {
 
             if (
               status !== "IDLE" &&
-              status !== "CANCELING" &&
+              status !== "CANCELLING" &&
               usingPrompt?.id === id
             ) {
               void cancel();

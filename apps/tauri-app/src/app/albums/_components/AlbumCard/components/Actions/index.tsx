@@ -22,7 +22,7 @@ const AlbumActions: React.FC = () => {
     <>
       {isThisGenerating && (
         <ActionButton
-          Icon={status === "CANCELING" ? Spinner : SpinningStopIcon}
+          Icon={status === "CANCELLING" ? Spinner : SpinningStopIcon}
           onClick={() => cancel()}
         />
       )}

@@ -25,17 +25,21 @@ const UserPrompts: React.FC = () => {
   }, [orders]);
 
   return (
-    <PromptsGrid orders={orders} setOrders={setOrders}>
-      {orders.map((promptId) => {
-        const prompt = prompts?.find((prompt) => prompt.id === promptId);
+    <>
+      <PromptsGrid orders={orders} setOrders={setOrders}>
+        {orders.map((promptId) => {
+          const prompt = prompts?.find((prompt) => prompt.id === promptId);
 
-        if (!prompt) return null;
+          if (!prompt) return null;
 
-        return <UserPromptCard key={prompt.id} data={prompt} />;
-      })}
+          return <UserPromptCard key={prompt.id} data={prompt} />;
+        })}
 
-      <NewPrompt />
-    </PromptsGrid>
+        <NewPrompt />
+      </PromptsGrid>
+
+      <div className="h-8" />
+    </>
   );
 };
 

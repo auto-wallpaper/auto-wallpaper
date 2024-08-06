@@ -25,11 +25,11 @@ type WallpaperEngineState = {
 
 export const WallpaperEngineStatus = {
   INITIALIZING: "INITIALIZING",
-  GENERATING_IMAGE: "GENERATING_IMAGE",
+  GENERATING: "GENERATING",
   UPSCALING: "UPSCALING",
   FINALIZING: "FINALIZING",
   IDLE: "IDLE",
-  CANCELING: "CANCELING",
+  CANCELLING: "CANCELLING",
 } as const;
 
 export type WallpaperEngineStatus = keyof typeof WallpaperEngineStatus;
@@ -105,7 +105,6 @@ export const useWallpaperEngineStore = create<WallpaperEngineState>(
       usingPrompt: null,
       generateSelectedPrompt: async () => {
         await invoke("generate_selected_prompt")
-
       },
       generateByPromptId: async (promptId: string) => {
         await invoke("generate_by_prompt_id", {

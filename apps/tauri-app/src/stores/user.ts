@@ -144,16 +144,6 @@ export const UserStore = makeStore(".user.dat", {
         }
       }
     },
-  }),
-  screenSize: makeField({
-    schema: z.object({
-      x: z.number(),
-      y: z.number(),
-    }),
-    defaultValue: {
-      x: 1,
-      y: 1
-    },
   })
 });
 

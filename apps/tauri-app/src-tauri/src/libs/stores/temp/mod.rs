@@ -16,7 +16,7 @@ impl TempRepository {
     pub fn get_last_active_track_event_day(&self) -> Result<u32> {
         let result = self
             .store
-            .query(|store| Ok(store.get("lastActiveTrackEventDay".to_string()).cloned()))?;
+            .run(|store| Ok(store.get("lastActiveTrackEventDay".to_string()).cloned()))?;
 
         match result {
             Some(data) => Ok(serde_json::from_value::<u32>(data)?),
@@ -25,7 +25,7 @@ impl TempRepository {
     }
 
     pub fn set_last_active_track_event_day(&mut self, day: u32) -> Result<()> {
-        let _ = self.store.mutate(|store| {
+        let _ = self.store.run(|store| {
             store.insert("lastActiveTrackEventDay".into(), day.into())?;
 
             store.save()

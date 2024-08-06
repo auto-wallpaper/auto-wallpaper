@@ -14,19 +14,7 @@ impl Store {
         }
     }
 
-    pub fn mutate<
-        T,
-        F: FnOnce(&mut tauri_plugin_store::Store<tauri::Wry>) -> tauri_plugin_store::Result<T>,
-    >(
-        &mut self,
-        f: F,
-    ) -> tauri_plugin_store::Result<T> {
-        let stores = self.app_handle.state::<StoreCollection<Wry>>();
-
-        with_store(self.app_handle.clone(), stores, self.path.clone(), f)
-    }
-
-    pub fn query<
+    pub fn run<
         T,
         F: FnOnce(&mut tauri_plugin_store::Store<tauri::Wry>) -> tauri_plugin_store::Result<T>,
     >(
