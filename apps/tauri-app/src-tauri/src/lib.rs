@@ -35,7 +35,7 @@ use tauri::{
 };
 use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_log::{fern::colors::ColoredLevelConfig, RotationStrategy, Target, TargetKind};
+use tauri_plugin_log::{fern::colors::ColoredLevelConfig, Target, TargetKind};
 use tokio::time::sleep;
 
 const APTABASE_KEY: &str = "A-EU-5389767615";
@@ -137,7 +137,6 @@ pub fn run() {
                 .with_colors(ColoredLevelConfig::default())
                 .max_file_size(2 * 1024 /* 2MB */)
                 .level(LevelFilter::Info)
-                .rotation_strategy(RotationStrategy::KeepAll)
                 .build(),
         )
         .setup(|app| {
