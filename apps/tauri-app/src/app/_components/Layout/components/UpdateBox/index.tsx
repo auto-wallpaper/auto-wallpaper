@@ -59,22 +59,18 @@ const UpdateBox: React.FC = () => {
 
   useEffect(() => {
     void check();
+
+    const interval = setInterval(() => {
+      void check();
+    }, 600_000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [check]);
 
   useEffect(() => {
-    if (update?.available) {
-      setOpen(true);
-
-      const interval = setInterval(() => {
-        setOpen(true);
-      }, 600_000);
-
-      return () => {
-        clearInterval(interval);
-      };
-    }
-
-    setOpen(false);
+    setOpen(update?.available ?? false);
   }, [update]);
 
   return (
