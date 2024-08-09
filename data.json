@@ -3,59 +3,99 @@
     "prompts": [
         {
             "id": "a9697008-1906-4947-8cdb-66a187419bbb",
-            "prompt": "People walking and cars driving in the city during the $DAY_TIME with $WEATHER"
+            "prompt": "A sleek car speeding down an empty, rain-soaked road cutting through a vast, open field. The ground glistens with fresh puddles reflecting the moody, blue-hued twilight sky, creating a dramatic, dark atmosphere. The car's headlights pierce through the dim light, adding a sense of motion and intensity to the scene.",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "5f2f6b6b-d084-4df2-944d-a8bd26383473",
-            "prompt": "Off-Roading and drifting during the $DAY_TIME with $WEATHER, capturing scenes of people and cars."
+            "prompt": "Speeding car on the Mars planet during raining weather",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "2d2688c7-b6df-497a-93a3-832859c841eb",
-            "prompt": "farm of colorful flowers"
+            "prompt": "The Tbilisi City in Georgia during $WEATHER at $DAY_TIME",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "77e350a9-6542-4d61-b9b5-5144e16f6d73",
-            "prompt": "A surreal sky with floating islands, each home to a different ecosystem, lit by a mesmerizing moon that changes color as it moves across the sky"
+            "prompt": "Old broken piano in a jungle",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "636734c5-f880-4112-b29d-2702d96d43b7",
-            "prompt": "An intergalactic highway stretching across a backdrop of distant planets, with neon-lit cities nestled among asteroid clusters, space stations, and bustling starships"
+            "prompt": "Old wooden bridge connecting 2 jungles",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "267f3704-7243-449f-ba68-9df5e442d619",
-            "prompt": "A dragon perched atop a spire of a mystical castle, while knights on flying horses engage in a thrilling aerial battle, all set against a backdrop of a magical forest"
+            "prompt": "Old house in a jungle",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "6642d723-487c-4c5d-93e2-c467ccbf3acb",
-            "prompt": "A rainy night in a neon-lit city, where shadows are cast by towering skyscrapers and the streets are alive with bustling crowds and futuristic vehicles"
+            "prompt": "interior decoration of a boho and minimal styled cafe having a counter",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "8f469b73-82d1-437e-8af2-63456121743a",
-            "prompt": "A field of dandelions stretching as far as the eye can see, each one transforming into a different creature or object as it's blown away by the wind"
+            "prompt": "An eagle flying on a wide field",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "1b8969f5-7eb8-475d-9110-e32fa4f1f5a3",
-            "prompt": "A grand airship sailing through the clouds, powered by gears and steam, with a crew of adventurers on a quest to uncover the secrets of a lost civilization"
+            "prompt": "Modern Golden City",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "b4299ff0-5038-4716-a138-5bc2c351dcb0",
-            "prompt": "A vibrant explosion of colors and shapes, each one representing a different emotion or idea, swirling together to create a dynamic and visually striking image"
+            "prompt": "Golden Unrealistic Skeleton and skulls",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "9266e7b7-068a-4774-a1e5-d824282d16b5",
-            "prompt": "A serene forest scene, with animals of all shapes and sizes living in harmony among the trees, accompanied by the gentle sound of a babbling brook"
+            "prompt": "Blowing City",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         },
         {
             "id": "bf34a964-24df-441b-a048-77f2258e5723",
-            "prompt": "A bustling marketplace where people of all cultures come together to trade goods, share stories, and celebrate their differences, all against a backdrop of colorful, traditional architecture"
-        },
-        {
-            "id": "5fe9d172-de08-4890-aa85-5714e3559c38",
-            "prompt": "Science Fiction scene of warriors walking around a beacon that is having a laser to the sky at night and spaceships are in the sky waiting for the war to start "
-        },
-        {
-            "id": "35061ddc-dda3-4770-8ebb-9cd24e3cce24",
-            "prompt": "golden horrifying skeleton in a dark background"
+            "prompt": "Off-Roading and drifting during the $DAY_TIME with $WEATHER, capturing scenes of people and cars.",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
         }
     ]
 }
