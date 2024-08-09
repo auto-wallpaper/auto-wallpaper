@@ -5,7 +5,7 @@ mod utils;
 use log::{error, info};
 use serde::Serialize;
 use status_manager::Status;
-use tauri::{Manager, PhysicalSize};
+use tauri::{Emitter, Manager, PhysicalSize};
 use tokio::io;
 use using_prompt_manager::UsingPrompt;
 use utils::{download_image_file, save_image_file};

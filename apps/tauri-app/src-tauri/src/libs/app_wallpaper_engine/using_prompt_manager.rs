@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
+use tauri::Emitter;
 use tokio::sync::Mutex;
 
 use crate::libs::stores::user::{Prompt, PromptUpscale};

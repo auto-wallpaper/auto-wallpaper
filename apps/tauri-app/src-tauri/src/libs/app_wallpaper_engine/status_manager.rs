@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tauri::Manager;
+use tauri::Emitter;
 use tokio::sync::Mutex;
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
