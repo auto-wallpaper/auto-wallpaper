@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getCurrent } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { IoCloseOutline } from "react-icons/io5";
 import { LuMaximize, LuMinimize, LuRefreshCcw } from "react-icons/lu";
 import { VscChromeMinimize } from "react-icons/vsc";
@@ -14,7 +14,7 @@ import { useWallpaperEngineStore } from "~/lib/WallpaperGenerator";
 import { IntervalsInMinute, UserStore } from "~/stores/user";
 import { calculateRemainingTime } from "~/utils/time";
 
-const appWindow = typeof window === "undefined" ? null : getCurrent();
+const appWindow = typeof window === "undefined" ? null : getCurrentWindow();
 
 const Titlebar = () => {
   const [isMaximized, setIsMaximized] = useState(false);
