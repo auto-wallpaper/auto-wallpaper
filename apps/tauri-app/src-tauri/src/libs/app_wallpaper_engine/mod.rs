@@ -182,6 +182,13 @@ impl AppWallpaperEngine {
             n += 1;
         };
 
+        self.user_repository
+            .update_prompt_generated_at_field(prompt.clone().id)?;
+
+        if result.is_ok() {
+            self.device_wallpaper.refresh_wallpaper()?;
+        }
+
         let using_prompt = UsingPrompt {
             album_id,
             ..prompt.clone().into()
@@ -246,27 +253,17 @@ impl AppWallpaperEngine {
         let _ = self.engine.destroy(&mut leonardo);
 
         let generated_image_url = match generation_result {
-            Ok(url) => url,
+            Ok(url) => Ok(url),
             Err(err) => match err {
-                wallpaper_engine::Error::Cancelled => {
-                    self.user_repository
-                        .update_prompt_generated_at_field(prompt.id)?;
-                    
-                    return Err(Error::Cancelled);
-                }
-                other => return Err(other)?,
+                wallpaper_engine::Error::Cancelled => Err(Error::Cancelled),
+                other => Err(other.into()),
             },
-        };
+        }?;
 
         self.set_status(Status::Finalizing).await;
 
         self.download_and_save_image_file(prompt.id.clone(), generated_image_url)
             .await?;
-
-        self.user_repository
-            .update_prompt_generated_at_field(prompt.id)?;
-
-        self.device_wallpaper.refresh_wallpaper()?;
 
         Ok(())
     }
@@ -305,8 +302,6 @@ impl AppWallpaperEngine {
         Ok(())
     }
 }
-
-
 
 pub fn handle_result(result: Result<()>) -> std::result::Result<(), String> {
     match result {
