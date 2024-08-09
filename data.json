@@ -1,0 +1,101 @@
+{
+    "minVersion": "0.1.5",
+    "prompts": [
+        {
+            "id": "a9697008-1906-4947-8cdb-66a187419bbb",
+            "prompt": "A sleek car speeding down an empty, rain-soaked road cutting through a vast, open field. The ground glistens with fresh puddles reflecting the moody, blue-hued twilight sky, creating a dramatic, dark atmosphere. The car's headlights pierce through the dim light, adding a sense of motion and intensity to the scene.",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "5f2f6b6b-d084-4df2-944d-a8bd26383473",
+            "prompt": "Speeding car on the Mars planet during raining weather",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "2d2688c7-b6df-497a-93a3-832859c841eb",
+            "prompt": "The Tbilisi City in Georgia during $WEATHER at $DAY_TIME",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "77e350a9-6542-4d61-b9b5-5144e16f6d73",
+            "prompt": "Old broken piano in a jungle",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "636734c5-f880-4112-b29d-2702d96d43b7",
+            "prompt": "Old wooden bridge connecting 2 jungles",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "267f3704-7243-449f-ba68-9df5e442d619",
+            "prompt": "Old house in a jungle",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "6642d723-487c-4c5d-93e2-c467ccbf3acb",
+            "prompt": "interior decoration of a boho and minimal styled cafe having a counter",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "8f469b73-82d1-437e-8af2-63456121743a",
+            "prompt": "An eagle flying on a wide field",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "1b8969f5-7eb8-475d-9110-e32fa4f1f5a3",
+            "prompt": "Modern Golden City",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "b4299ff0-5038-4716-a138-5bc2c351dcb0",
+            "prompt": "Golden Unrealistic Skeleton and skulls",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "9266e7b7-068a-4774-a1e5-d824282d16b5",
+            "prompt": "Blowing City",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        },
+        {
+            "id": "bf34a964-24df-441b-a048-77f2258e5723",
+            "prompt": "Off-Roading and drifting during the $DAY_TIME with $WEATHER, capturing scenes of people and cars.",
+            "upscale": {
+                "style": "Cinematic",
+                "creativityStrength": 7
+            }
+        }
+    ]
+}
