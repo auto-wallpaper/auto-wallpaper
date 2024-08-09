@@ -40,7 +40,8 @@
       "deb": {
         "depends": []
       }
-    }
+    },
+    "createUpdaterArtifacts": true
   },
   "productName": "Auto Wallpaper",
   "version": "./../../../package.json",

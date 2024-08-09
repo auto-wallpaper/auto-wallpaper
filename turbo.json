@@ -20,7 +20,8 @@
         ".output/**",
         ".vercel/output/**",
         "target/**"
-      ]
+      ],
+      "env": ["TAURI_SIGNING_PRIVATE_KEY", "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"]
     },
     "dev": {
       "persistent": true,
