@@ -48,7 +48,7 @@ This project is built using the `created-t3-turbo` template (https://github.com/
 #### Prerequisites:
 
 - **Node.js:** Version 20.10.0 or above
-- **pnpm:** Version 9.0.4 or above (other package managers are not supported)
+- **pnpm:** Version 9.2.0 or above (other package managers are not supported)
 - **Rust and Tauri prerequisites:** Follow the official Tauri documentation: https://v2.tauri.app/start/prerequisites/
 
 #### Getting Started:
@@ -56,8 +56,8 @@ This project is built using the `created-t3-turbo` template (https://github.com/
 1. **Fork and Clone this project.**
 2. **Install dependencies:** Navigate to the project's root directory and run `pnpm i`.
 3. **Available commands:**
-   - `pnpm dev -F tauri-app`: Starts the application in development mode.
-   - `pnpm build -F tauri-app`: Builds the application for local execution.
+   - `pnpm dev`: Starts the application in development mode.
+   - `pnpm build`: Builds the application for local execution.
    - `pnpm add -F tauri-app <package-name>`: Adds a new package to the project.
 
 #### Note for Local Development:
