@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { IoCloseOutline } from "react-icons/io5";
 import { LuMaximize, LuMinimize, LuRefreshCcw } from "react-icons/lu";
@@ -43,92 +43,98 @@ const Titlebar = () => {
   const prompts = UserStore.prompts.useValue();
   const status = useWallpaperEngineStore((state) => state.status);
 
-  useEffect(() => {
+  const updateStatusText = useCallback(() => {
     if (!interval || !prompts) return;
 
-    const nodejsInterval = setInterval(() => {
-      const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
-        if (!a.generatedAt) return 1;
-        if (!b.generatedAt) return -1;
+    const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
+      if (!a.generatedAt) return 1;
+      if (!b.generatedAt) return -1;
 
-        return b.generatedAt.getTime() - a.generatedAt.getTime();
-      })[0];
+      return b.generatedAt.getTime() - a.generatedAt.getTime();
+    })[0];
 
-      const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
+    const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
 
-      let result: React.ReactNode = null;
+    let result: React.ReactNode = null;
 
-      const withSpinnersMap = {
-        INITIALIZING: "Initializing",
-        GENERATING: "Generating Wallpaper",
-        UPSCALING: "Upscaling the Wallpaper",
-        FINALIZING: "Finalizing",
-        CANCELLING: "Cancelling",
-      } satisfies Partial<Record<WallpaperEngineStatus, string>>;
+    const withSpinnersMap = {
+      INITIALIZING: "Initializing",
+      GENERATING: "Generating Wallpaper",
+      UPSCALING: "Upscaling the Wallpaper",
+      FINALIZING: "Finalizing",
+      CANCELLING: "Cancelling",
+    } satisfies Partial<Record<WallpaperEngineStatus, string>>;
 
-      switch (status) {
-        case "INITIALIZING":
-        case "GENERATING":
-        case "UPSCALING":
-        case "FINALIZING":
-        case "CANCELLING":
+    switch (status) {
+      case "INITIALIZING":
+      case "GENERATING":
+      case "UPSCALING":
+      case "FINALIZING":
+      case "CANCELLING":
+        result = (
+          <>
+            <Spinner /> {withSpinnersMap[status]}
+          </>
+        );
+        break;
+      case "IDLE": {
+        if (interval === "OFF") {
+          result = <>Idle</>;
+          break;
+        }
+
+        if (!lastGenerationTimestamp) {
           result = (
             <>
-              <Spinner /> {withSpinnersMap[status]}
+              You have not generated anything yet. generate one using the{" "}
+              <LuRefreshCcw /> button
             </>
           );
           break;
-        case "IDLE": {
-          if (interval === "OFF") {
-            result = <>Idle</>;
-            break;
-          }
+        }
 
-          if (!lastGenerationTimestamp) {
-            result = (
-              <>
-                You have not generated anything yet. generate one using the{" "}
-                <LuRefreshCcw /> button
-              </>
-            );
-            break;
-          }
+        const leftSeconds =
+          lastGenerationTimestamp.getTime() +
+          IntervalsInMinute[interval] * 60_000 -
+          Date.now();
 
-          const leftSeconds =
-            lastGenerationTimestamp.getTime() +
-            IntervalsInMinute[interval] * 60_000 -
-            Date.now();
-
-          if (leftSeconds <= 0) {
-            result = (
-              <>
-                <Spinner />
-              </>
-            );
-            break;
-          }
-
+        if (leftSeconds <= 0) {
           result = (
             <>
-              Wallpaper generation will begin{" "}
-              {calculateRemainingTime(
-                new Date(
-                  lastGenerationTimestamp.getTime() +
-                    IntervalsInMinute[interval] * 60_000,
-                ),
-              )}
+              <Spinner />
             </>
           );
+          break;
         }
-      }
 
-      setStatusText(result);
+        result = (
+          <>
+            Wallpaper generation will begin{" "}
+            {calculateRemainingTime(
+              new Date(
+                lastGenerationTimestamp.getTime() +
+                  IntervalsInMinute[interval] * 60_000,
+              ),
+            )}
+          </>
+        );
+      }
+    }
+
+    setStatusText(result);
+  }, [interval, status, prompts]);
+
+  useEffect(() => {
+    updateStatusText();
+
+    const interval = setInterval(() => {
+      updateStatusText();
     }, 1000);
 
     return () => {
-      clearInterval(nodejsInterval);
+      clearInterval(interval);
     };
-  }, [interval, prompts, status]);
+  }, [updateStatusText]);
 
   return (
     <div className="flex w-full bg-transparent">
