@@ -46,82 +46,88 @@ const Titlebar = () => {
   useEffect(() => {
     if (!interval || !prompts) return;
 
-    const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
-      if (!a.generatedAt) return 1;
-      if (!b.generatedAt) return -1;
+    const nodejsInterval = setInterval(() => {
+      const mostRecentGeneratedPrompt = [...prompts].sort((a, b) => {
+        if (!a.generatedAt) return 1;
+        if (!b.generatedAt) return -1;
 
-      return b.generatedAt.getTime() - a.generatedAt.getTime();
-    })[0];
+        return b.generatedAt.getTime() - a.generatedAt.getTime();
+      })[0];
 
-    const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
+      const lastGenerationTimestamp = mostRecentGeneratedPrompt?.generatedAt;
 
-    let result: React.ReactNode = null;
+      let result: React.ReactNode = null;
 
-    const withSpinnersMap = {
-      INITIALIZING: "Initializing",
-      GENERATING: "Generating Wallpaper",
-      UPSCALING: "Upscaling the Wallpaper",
-      FINALIZING: "Finalizing",
-      CANCELLING: "Cancelling",
-    } satisfies Partial<Record<WallpaperEngineStatus, string>>;
+      const withSpinnersMap = {
+        INITIALIZING: "Initializing",
+        GENERATING: "Generating Wallpaper",
+        UPSCALING: "Upscaling the Wallpaper",
+        FINALIZING: "Finalizing",
+        CANCELLING: "Cancelling",
+      } satisfies Partial<Record<WallpaperEngineStatus, string>>;
 
-    switch (status) {
-      case "INITIALIZING":
-      case "GENERATING":
-      case "UPSCALING":
-      case "FINALIZING":
-      case "CANCELLING":
-        result = (
-          <>
-            <Spinner /> {withSpinnersMap[status]}
-          </>
-        );
-        break;
-      case "IDLE": {
-        if (interval === "OFF") {
-          result = <>Idle</>;
-          break;
-        }
-
-        if (!lastGenerationTimestamp) {
+      switch (status) {
+        case "INITIALIZING":
+        case "GENERATING":
+        case "UPSCALING":
+        case "FINALIZING":
+        case "CANCELLING":
           result = (
             <>
-              You have not generated anything yet. generate one using the{" "}
-              <LuRefreshCcw /> button
+              <Spinner /> {withSpinnersMap[status]}
             </>
           );
           break;
-        }
+        case "IDLE": {
+          if (interval === "OFF") {
+            result = <>Idle</>;
+            break;
+          }
 
-        const leftSeconds =
-          lastGenerationTimestamp.getTime() +
-          IntervalsInMinute[interval] * 60_000 -
-          Date.now();
+          if (!lastGenerationTimestamp) {
+            result = (
+              <>
+                You have not generated anything yet. generate one using the{" "}
+                <LuRefreshCcw /> button
+              </>
+            );
+            break;
+          }
 
-        if (leftSeconds <= 0) {
+          const leftSeconds =
+            lastGenerationTimestamp.getTime() +
+            IntervalsInMinute[interval] * 60_000 -
+            Date.now();
+
+          if (leftSeconds <= 0) {
+            result = (
+              <>
+                <Spinner />
+              </>
+            );
+            break;
+          }
+
           result = (
             <>
-              <Spinner />
+              Wallpaper generation will begin{" "}
+              {calculateRemainingTime(
+                new Date(
+                  lastGenerationTimestamp.getTime() +
+                    IntervalsInMinute[interval] * 60_000,
+                ),
+              )}
             </>
           );
-          break;
         }
-
-        result = (
-          <>
-            Wallpaper generation will begin{" "}
-            {calculateRemainingTime(
-              new Date(
-                lastGenerationTimestamp.getTime() +
-                  IntervalsInMinute[interval] * 60_000,
-              ),
-            )}
-          </>
-        );
       }
-    }
 
-    setStatusText(result);
+      setStatusText(result);
+    }, 1000);
+
+    return () => {
+      clearInterval(nodejsInterval);
+    };
   }, [interval, prompts, status]);
 
   return (
