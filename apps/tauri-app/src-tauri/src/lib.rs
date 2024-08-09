@@ -226,6 +226,14 @@ pub fn run() {
                             .add(interval_to_duration(interval).num_milliseconds()))
                         > 0
                     {
+                        let status_manager = app_handle.state::<status_manager::Store>();
+
+                        let current_status = status_manager.lock().await.get();
+
+                        if current_status != status_manager::Status::Idle {
+                            continue;
+                        }
+
                         let _ = app_wallpaper_engine::handle_result(
                             app_handle
                                 .clone()
