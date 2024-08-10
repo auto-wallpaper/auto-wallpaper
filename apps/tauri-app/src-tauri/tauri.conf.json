@@ -88,7 +88,7 @@
         "default-src": "'self'",
         "img-src": "'self' asset: http://asset.localhost https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/ blob: http://tauri.localhost",
         "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "ipc: http://ipc.localhost http://tauri.localhost"
+        "connect-src": "ipc: http://ipc.localhost http://tauri.localhost https://raw.githubusercontent.com/auto-wallpaper/auto-wallpaper/gallery/"
       }
     }
   }
