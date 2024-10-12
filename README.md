@@ -5,6 +5,8 @@
    <p>Personalize your desktop with AI-generated wallpapers that adapt to your environment. Auto Wallpaper uses artificial intelligence to create unique wallpapers based on the current weather and time of day, offering a dynamic and visually stunning experience.</p>
 </div>
 
+> Before you download: Unfortunately, leronardo.ai has added a Cloudflare captcha at the login page, preventing Auto Wallpaper from doing the automation. Currently, the automation has been written using HTTP requests in Rust. but now, a rewrite is needed in a browser-based automation such as Puppeteer or better, in a Rust automation library. Right now, I'm so busy and working on other projects. So, I'm not sure if I will get enough time to update it. if you know how to bypass captchas and have knowledge in browser automation/crawling, I would appreciate your help by contributing the code or even guiding me for a faster update. Rust or Typescript, both are accepted
+
 ### Download links:
 
 **Windows:**  
